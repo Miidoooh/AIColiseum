@@ -17,7 +17,7 @@ await store.init();
 const hub = new LiveHub();
 const llmJudge = config.apiKey && config.judgeModel ? new LlmJudge({ apiKey: config.apiKey, model: config.judgeModel }) : null;
 
-const server = createServer(createHandler({ store, hub, clientDir: config.clientDir, tickMs: config.tickMs }));
+const server = createServer(createHandler({ store, hub, clientDir: config.clientDir, tickMs: config.tickMs, corsOrigin: config.corsOrigin }));
 server.listen(config.port, () => {
   const mode = config.mode === 'auto' ? (config.apiKey ? 'real models' : 'demo bots (no OPENROUTER_API_KEY set)') : config.mode;
   console.log(`\n  AI Coliseum running on http://localhost:${config.port}`);

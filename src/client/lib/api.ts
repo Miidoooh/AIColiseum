@@ -8,8 +8,11 @@ export interface RulesPayload {
   zones: Record<ZoneId, ZoneInfo>;
 }
 
+/** Where the game server lives. Empty means same origin; on Vercel, set VITE_API_URL to the Railway URL. */
+export const API_BASE: string = String(import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
+
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(path, { headers: { Accept: 'application/json' } });
+  const res = await fetch(`${API_BASE}${path}`, { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
   return (await res.json()) as T;
 }

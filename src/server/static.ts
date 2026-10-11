@@ -35,8 +35,8 @@ export async function serveStatic(res: ServerResponse, root: string, pathname: s
   if (!info?.isFile()) {
     const indexExists = await stat(join(base, 'index.html')).catch(() => null);
     if (!indexExists) {
-      res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('The client is not built yet. Run "npm start" (builds and serves) or "npm run dev".');
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('AI Coliseum game server is running. Live data: /api/status. No website build here; the site is served separately.');
       return;
     }
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Not found');

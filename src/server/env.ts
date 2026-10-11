@@ -14,6 +14,7 @@ export interface ServerConfig {
   rosterPath: string;
   dataDir: string;
   clientDir: string;
+  corsOrigin: string;
 }
 
 function int(value: string | undefined, fallback: number, min: number, max: number): number {
@@ -40,5 +41,6 @@ export function loadConfig(cwd = process.cwd()): ServerConfig {
     rosterPath: resolve(cwd, env.ROSTER_PATH || 'config/roster.json'),
     dataDir: resolve(cwd, env.DATA_DIR || 'data/matches'),
     clientDir: resolve(cwd, 'dist/client'),
+    corsOrigin: env.CORS_ORIGIN?.trim() || '*',
   };
 }

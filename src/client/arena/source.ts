@@ -1,4 +1,5 @@
 import type { GameEvent, LiveStatus } from '../../shared/types';
+import { API_BASE } from '../lib/api';
 import type { MatchModel } from './match-model';
 
 const INSTANT: GameEvent['type'][] = ['state', 'tick_started', 'note', 'idle', 'whispered', 'pact_offered', 'defended'];
@@ -62,7 +63,7 @@ export interface LiveHooks {
 
 export function connectLive(model: MatchModel, hooks: LiveHooks): () => void {
   const pacer = new Pacer((e) => model.apply(e, true), () => model.estimatedTickMs());
-  const source = new EventSource('/api/live');
+  const source = new EventSource(`${API_BASE}/api/live`);
   source.addEventListener('hello', (msg) => {
     const data = JSON.parse((msg as MessageEvent<string>).data) as { events: GameEvent[]; phase: LiveStatus['phase']; nextMatchAt: number | null };
     pacer.clear();

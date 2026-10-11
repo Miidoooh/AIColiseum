@@ -12,6 +12,7 @@ export interface HttpDeps {
   hub: LiveHub;
   clientDir: string;
   tickMs: number;
+  corsOrigin: string;
 }
 
 function json(res: ServerResponse, body: unknown, status = 200): void {
@@ -41,6 +42,12 @@ function rulesPayload(tickMs: number) {
 export function createHandler(deps: HttpDeps) {
   const rules = rulesPayload(deps.tickMs);
   return async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
+    res.setHeader('Access-Control-Allow-Origin', deps.corsOrigin);
+    res.setHeader('Vary', 'Origin');
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, { 'Access-Control-Allow-Methods': 'GET, HEAD', 'Access-Control-Allow-Headers': 'Accept, Content-Type' }).end();
+      return;
+    }
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.writeHead(405, { Allow: 'GET, HEAD' }).end();
       return;
@@ -48,6 +55,7 @@ export function createHandler(deps: HttpDeps) {
     const url = new URL(req.url ?? '/', 'http://localhost');
     const path = url.pathname;
     try {
+      if (path === '/health') return json(res, { ok: true });
       if (path === '/api/live') return deps.hub.attach(req, res);
       if (path === '/api/status') return json(res, deps.hub.status());
       if (path === '/api/rules') return json(res, rules);
