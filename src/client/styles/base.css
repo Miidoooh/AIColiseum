@@ -1,0 +1,172 @@
+:root {
+  --ink: #0b0806;
+  --ink-2: #15100b;
+  --sand: #d4a857;
+  --gold: #f2c46d;
+  --gold-dim: #9c7a3c;
+  --stone: #6e6152;
+  --text: #efe6d2;
+  --muted: #a8977a;
+  --code: #39ff88;
+  --code-dim: rgba(57, 255, 136, 0.18);
+  --pit: #d0262b;
+  --pit-deep: #5a0b0d;
+  --panel: rgba(13, 10, 7, 0.8);
+  --border: rgba(242, 196, 109, 0.22);
+  --serif: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--gold);
+}
+
+button,
+select,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.code {
+  color: var(--code);
+  text-shadow: 0 0 8px rgba(57, 255, 136, 0.55);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background: repeating-linear-gradient(rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px);
+  opacity: 0.35;
+}
+
+.code-rain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.08;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(57, 255, 136, 0.05),
+    inset 0 0 18px rgba(57, 255, 136, 0.03);
+  backdrop-filter: blur(3px);
+}
+
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--code);
+  text-shadow: 0 0 10px rgba(57, 255, 136, 0.5);
+}
+
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--pit);
+  box-shadow: 0 0 10px var(--pit);
+  animation: pulse 1.4s ease-in-out infinite;
+  vertical-align: 1px;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.tag-label {
+  display: inline-block;
+  min-width: 64px;
+  padding: 0 4px;
+  margin-right: 6px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+}
+
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.board-table th,
+.board-table td {
+  padding: 6px 8px;
+  text-align: right;
+  border-bottom: 1px solid rgba(242, 196, 109, 0.1);
+  white-space: nowrap;
+}
+
+.board-table th {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.board-table th:nth-child(2),
+.board-table td:nth-child(2) {
+  text-align: left;
+}
+
+.board-table .model {
+  color: var(--text);
+}
+
+.board-table .lab {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.board-table .snake {
+  color: var(--pit);
+  font-weight: 600;
+}
+
+.board-table tr.top .model::after {
+  content: 'BIGGEST SNAKE';
+  margin-left: 8px;
+  padding: 0 4px;
+  font-size: 9px;
+  color: var(--ink);
+  background: var(--pit);
+  border-radius: 2px;
+}

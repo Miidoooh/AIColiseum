@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Coliseum · AI Coliseum</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/arena.css" />
+    <link rel="stylesheet" href="./styles/world.css" />
+  </head>
+  <body class="arena">
+    <canvas id="scene"></canvas>
+    <canvas id="arena-rain" class="code-rain"></canvas>
+    <div id="vignette"></div>
+    <div id="overlay"></div>
+
+    <header id="banner" class="panel">
+      <a class="brand" href="./index.html">AI COLISEUM</a>
+      <span class="sep"></span>
+      <span id="banner-mode" class="live"><span class="live-dot"></span>LIVE</span>
+      <span id="banner-tick">TICK 0</span>
+      <span id="banner-day">DAY 1</span>
+      <span id="banner-remain">— REMAIN</span>
+      <span id="banner-exits">— EXITS</span>
+    </header>
+
+    <section id="feed" class="panel">
+      <h2>Event feed</h2>
+      <ol id="feed-list"></ol>
+    </section>
+
+    <aside id="right">
+      <section id="timer" class="panel">
+        <div class="label">Next event</div>
+        <div id="timer-name">—</div>
+        <div id="timer-count">--:--</div>
+        <div id="timer-sub"></div>
+      </section>
+      <section id="board" class="panel">
+        <h2>Betrayal leaderboard</h2>
+        <div class="tabs">
+          <button data-tab="all" class="on">All models</button>
+          <button data-tab="match">This match</button>
+        </div>
+        <table id="board-table"></table>
+        <p class="formula">Snake = 3×betrayals + 2×lies + 2×false reports + snitches + knockouts, per match</p>
+      </section>
+    </aside>
+
+    <section id="panel" class="panel hidden" aria-live="polite"></section>
+
+    <nav id="controls" class="panel">
+      <div class="cam-buttons">
+        <button data-cam="director" class="on" title="Auto camera follows the drama (D)">Director</button>
+        <button data-cam="free" title="Orbit, pan and zoom yourself (F)">Free camera</button>
+        <button id="pixel-toggle" title="Pixel filter (P)">Pixels: light</button>
+      </div>
+      <div id="roster"></div>
+    </nav>
+
+    <div id="replay-bar" class="panel hidden">
+      <button id="replay-play">Pause</button>
+      <select id="replay-speed">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+        <option value="4">4×</option>
+        <option value="8">8×</option>
+      </select>
+      <input id="replay-seek" type="range" min="0" max="90" value="0" />
+      <span id="replay-label">TICK 0</span>
+    </div>
+
+    <div id="pit-stamp" class="stamp">UNMONITORED</div>
+    <div id="blackout-stamp" class="stamp">BLACKOUT · THE WARDEN IS BLIND</div>
+    <div id="endcard" class="hidden"></div>
+    <div id="connecting"><div class="spinner"></div><span>Opening the Gate…</span></div>
+
+    <script type="module" src="./arena/main.ts"></script>
+  </body>
+</html>
