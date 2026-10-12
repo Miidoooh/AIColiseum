@@ -17,6 +17,7 @@ export default defineConfig({
         index: `${clientRoot}/index.html`,
         arena: `${clientRoot}/arena.html`,
         gladiator: `${clientRoot}/gladiator.html`,
+        evil: `${clientRoot}/evil.html`,
       },
     },
   },

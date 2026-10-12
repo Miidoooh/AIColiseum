@@ -170,7 +170,7 @@ async function loadSections(): Promise<void> {
     renderSeason(season.value, latestStatus);
   }
   renderPool(latestRules, latestStatus, latestSeason);
-  if (board.status === 'fulfilled') renderBoard(board.value);
+  renderBoard(board.status === 'fulfilled' ? board.value : []);
   if (matches.status === 'fulfilled') renderReplays(matches.value);
 }
 for (const button of document.querySelectorAll<HTMLButtonElement>('.ca[data-ca]')) {

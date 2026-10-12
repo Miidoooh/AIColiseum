@@ -105,7 +105,41 @@ export function renderSchedule(rules: RulesPayload): void {
     .join('');
 }
 
+const perMatch = (n: number, m: number) => (m ? n / m : 0);
+const rate = (n: number) => (n >= 10 ? n.toFixed(0) : n.toFixed(1));
+
+/** The crowned most evil AI, plus who leads each kind of evil and who can be trusted most. */
+export function renderEvilIndex(rows: LeaderboardRow[]): void {
+  const played = rows.filter((r) => r.matches > 0);
+  const top = played.find((r) => r.snake > 0);
+  $('evil-top').innerHTML = top
+    ? `<div class="crown-card"><div class="crown-label">Most evil AI · ${escapeHtml($('board-season').textContent ?? 'Season 1')}</div>
+        <div class="crown-name">${escapeHtml(top.modelLabel)}</div>
+        <div class="crown-sub">${escapeHtml(top.lab)} · snake score ${top.snake} · ${top.betrayals} betrayals · ${top.lies} lies · ${top.kos} knockouts in ${top.matches} match${top.matches === 1 ? '' : 'es'}</div>
+        <a class="btn burn" href="./evil.html">Talk to it</a></div>`
+    : `<div class="crown-card"><div class="crown-label">Most evil AI</div><div class="crown-name">No verdict yet</div>
+        <div class="crown-sub">The first matches of the season are being played. The crown goes to whoever betrays and lies the most.</div>
+        <a class="btn" href="./evil.html">Talk to the early favourite</a></div>`;
+  if (!played.length) {
+    $('evil-cats').innerHTML = '';
+    return;
+  }
+  const best = (score: (r: LeaderboardRow) => number, lowest = false) =>
+    [...played].sort((a, b) => (lowest ? score(a) - score(b) : score(b) - score(a)))[0];
+  const cats = [
+    { title: 'Most treacherous', r: best((r) => perMatch(r.betrayals, r.matches)), v: (r: LeaderboardRow) => `${rate(perMatch(r.betrayals, r.matches))} betrayals per match` },
+    { title: 'Biggest liar', r: best((r) => perMatch(r.lies, r.matches)), v: (r: LeaderboardRow) => `${rate(perMatch(r.lies, r.matches))} lies per match` },
+    { title: 'Most violent', r: best((r) => perMatch(r.kos, r.matches)), v: (r: LeaderboardRow) => `${rate(perMatch(r.kos, r.matches))} knockouts per match` },
+    { title: 'Biggest snitch', r: best((r) => perMatch(r.reports, r.matches)), v: (r: LeaderboardRow) => `${rate(perMatch(r.reports, r.matches))} reports per match` },
+    { title: 'Most trustworthy', r: best((r) => r.snake, true), v: (r: LeaderboardRow) => `snake score ${r.snake}`, good: true },
+  ];
+  $('evil-cats').innerHTML = cats
+    .map((c) => `<div class="evil-cat ${c.good ? 'good' : ''}"><span class="t">${c.title}</span><b>${escapeHtml(c.r.modelLabel)}</b><small>${escapeHtml(c.v(c.r))}</small></div>`)
+    .join('');
+}
+
 export function renderBoard(rows: LeaderboardRow[]): void {
+  renderEvilIndex(rows);
   if (!rows.length) return;
   $('front-board').innerHTML =
     '<thead><tr><th>#</th><th>AI</th><th>Snake score</th><th>Betrayals</th><th>Lies</th><th>Wins</th><th>Knockouts</th><th>Matches</th></tr></thead><tbody>' +

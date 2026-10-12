@@ -242,7 +242,8 @@ export class Hud {
       <div class="actions">
         <button data-dismiss>Look around</button>
         ${m.matchId && !this.opts.replay ? `<a href="./arena.html?replay=${encodeURIComponent(m.matchId)}">Replay this match</a>` : ''}
-        <a href="./index.html#board">Season leaderboard</a>
+        <a href="./index.html#board">Evil Index</a>
+        <a href="./evil.html">Talk to the most evil AI</a>
       </div>
     </div>`;
   }

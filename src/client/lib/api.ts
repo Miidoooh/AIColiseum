@@ -53,7 +53,20 @@ export const api = {
   payWarden: (signature: string) => post<{ action: string; target?: string; payer: string; burned: number }>('/api/warden', { signature }),
   submitCall: (body: { wallet: string; picks: CallPicks; signature: string }) => post<{ ok: true; match: number }>('/api/calls', body),
   createGladiator: (body: Record<string, string>) => post<GladiatorView>('/api/gladiators', body),
+  villain: () => get<VillainView>('/api/villain'),
+  villainChat: (messages: { role: 'user' | 'assistant'; content: string }[]) => post<{ reply: string }>('/api/villain/chat', { messages }),
 };
+
+export interface VillainView {
+  model: string;
+  label: string;
+  lab: string;
+  color: string;
+  rank: 'champion' | 'early';
+  season: number;
+  stats: { matches: number; betrayals: number; lies: number; knockouts: number; snitched: number; snake: number };
+  quotes: { kind: 'thought' | 'said'; text: string; match?: number }[];
+}
 
 /** POSTs JSON and surfaces the server's own error message, which is written for the visitor. */
 async function post<T>(path: string, body: unknown): Promise<T> {
