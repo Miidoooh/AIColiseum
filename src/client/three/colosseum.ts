@@ -5,7 +5,7 @@ export const ARENA_RADIUS = 27;
 const WALL_R = 27.4;
 const DEG = Math.PI / 180;
 
-export interface Coliseum {
+export interface Colosseum {
   group: THREE.Group;
   gatePosition: THREE.Vector3;
   pitCenter: THREE.Vector3;
@@ -154,7 +154,7 @@ function outward(zoneId: keyof typeof ZONE_INFO, extra: number): THREE.Vector3 {
   return new THREE.Vector3(z.x + (z.x / len) * d, 0, z.z + (z.z / len) * d);
 }
 
-export function buildColiseum(opts: { shadows?: boolean } = {}): Coliseum {
+export function buildColosseum(opts: { shadows?: boolean } = {}): Colosseum {
   const shadows = opts.shadows ?? true;
   const group = new THREE.Group();
   const pitCenter = new THREE.Vector3(ZONE_INFO.pit.x, 0, ZONE_INFO.pit.z);

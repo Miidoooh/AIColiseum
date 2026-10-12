@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { ZONES } from '../../shared/arena';
 import type { GameEvent } from '../../shared/types';
-import { buildColiseum, type Coliseum } from '../three/coliseum';
+import { buildColosseum, type Colosseum } from '../three/colosseum';
 import { Effects } from '../three/effects';
 import { FighterMesh } from '../three/fighter-mesh';
 import { lootSpot, slotPosition } from '../three/layout';
@@ -39,7 +39,7 @@ export class Stage {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly controls: OrbitControls;
-  private readonly coliseum: Coliseum;
+  private readonly colosseum: Colosseum;
   private readonly effects: Effects;
   private readonly loot = new LootLayer();
   private readonly meshes = new Map<string, FighterMesh>();
@@ -85,9 +85,9 @@ export class Stage {
     this.sun.shadow.bias = -0.0006;
     this.scene.add(this.sun);
 
-    this.coliseum = buildColiseum({ shadows: true });
-    this.scene.add(this.coliseum.group, this.loot.group);
-    this.effects = new Effects(this.scene, this.coliseum.pitCenter);
+    this.colosseum = buildColosseum({ shadows: true });
+    this.scene.add(this.colosseum.group, this.loot.group);
+    this.effects = new Effects(this.scene, this.colosseum.pitCenter);
 
     this.camera = new THREE.PerspectiveCamera(45, 1, 0.5, 420);
     this.camera.position.set(0, 40, 50);
@@ -200,7 +200,7 @@ export class Stage {
       if (!mesh || mesh.status === f.status) continue;
       if (f.status === 'active') mesh.revive();
       else if (f.status === 'knocked_out') mesh.knockOut(!live);
-      else mesh.escape(!live, this.coliseum.gatePosition);
+      else mesh.escape(!live, this.colosseum.gatePosition);
     }
   }
 
@@ -228,10 +228,10 @@ export class Stage {
         this.syncStatuses(live);
         this.layout(!live);
         if (e.ground) this.loot.sync(e.ground);
-        this.coliseum.setBlackout(e.blackout);
+        this.colosseum.setBlackout(e.blackout);
         return;
       case 'tick_started':
-        this.coliseum.setBlackout(e.blackout);
+        this.colosseum.setBlackout(e.blackout);
         return;
       default:
         break;
@@ -266,14 +266,14 @@ export class Stage {
       }
       case 'escaped': {
         const mesh = this.meshes.get(e.fighter);
-        if (mesh && mesh.status === 'active') mesh.escape(false, this.coliseum.gatePosition);
-        this.coliseum.openGate(6);
-        window.setTimeout(() => this.effects.beam(this.coliseum.gatePosition), 2600);
+        if (mesh && mesh.status === 'active') mesh.escape(false, this.colosseum.gatePosition);
+        this.colosseum.openGate(6);
+        window.setTimeout(() => this.effects.beam(this.colosseum.gatePosition), 2600);
         this.focusOn(e.fighter, e.type);
         return;
       }
       case 'warden':
-        if (e.kind === 'release') this.coliseum.openGate(4);
+        if (e.kind === 'release') this.colosseum.openGate(4);
         if (e.kind === 'supply_drop') {
           const spot = lootSpot('sand');
           this.effects.dropCrate(new THREE.Vector3(spot.x, 0, spot.z));
@@ -306,7 +306,7 @@ export class Stage {
     this.elapsed = t;
     for (const mesh of this.meshes.values()) mesh.update(dt, t);
     this.effects.update(dt, t);
-    this.coliseum.update(dt, t);
+    this.colosseum.update(dt, t);
     this.loot.update(t);
 
     const blind = this.model.blackout;
@@ -315,7 +315,7 @@ export class Stage {
 
     this.updateCamera(dt);
     this.controls.update();
-    const inPit = this.controls.target.distanceTo(this.coliseum.pitCenter) < 6.5 && this.camera.position.distanceTo(this.controls.target) < 40;
+    const inPit = this.controls.target.distanceTo(this.colosseum.pitCenter) < 6.5 && this.camera.position.distanceTo(this.controls.target) < 40;
     if (inPit !== this.inPit) {
       this.inPit = inPit;
       this.onPitView(inPit);

@@ -5,14 +5,14 @@ import type { FighterView, LeaderboardRow, LiveStatus, MatchMeta, ZoneId } from 
 import { api, escapeHtml } from '../lib/api';
 import { startCodeRain } from '../lib/code-rain';
 import { EVENT_HELP, EVENT_NAME } from '../lib/feed';
-import { buildColiseum } from '../three/coliseum';
+import { buildColosseum } from '../three/colosseum';
 import { Effects } from '../three/effects';
 import { FighterMesh } from '../three/fighter-mesh';
 import { slotPosition } from '../three/layout';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
-// ---------- Hero: the Coliseum slowly turning, with the live fighters inside ----------
+// ---------- Hero: the Colosseum slowly turning, with the live fighters inside ----------
 const canvas = $<HTMLCanvasElement>('hero-scene');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
 renderer.setPixelRatio(0.42);
@@ -31,9 +31,9 @@ sun.shadow.mapSize.set(1024, 1024);
 Object.assign(sun.shadow.camera, { left: -44, right: 44, top: 44, bottom: -44, far: 120 });
 scene.add(sun);
 
-const coliseum = buildColiseum({ shadows: true });
-scene.add(coliseum.group);
-const effects = new Effects(scene, coliseum.pitCenter);
+const colosseum = buildColosseum({ shadows: true });
+scene.add(colosseum.group);
+const effects = new Effects(scene, colosseum.pitCenter);
 const camera = new THREE.PerspectiveCamera(40, 1, 1, 400);
 const fighters = new Map<string, { mesh: FighterMesh; zone: ZoneId }>();
 
@@ -117,7 +117,7 @@ renderer.setAnimationLoop((time) => {
   const r = 62 * Math.max(1, 1.5 / camera.aspect);
   camera.position.set(Math.cos(a) * r, 36 * (r / 62), Math.sin(a) * r);
   camera.lookAt(0, 2, 0);
-  coliseum.update(dt, t);
+  colosseum.update(dt, t);
   effects.update(dt, t);
   for (const f of fighters.values()) f.mesh.update(dt, t);
   renderer.render(scene, camera);
@@ -139,7 +139,7 @@ async function pollStatus(): Promise<void> {
     }
     renderFighters(status.fighters);
   } catch {
-    $('live-text').textContent = 'Coliseum offline';
+    $('live-text').textContent = 'Colosseum offline';
     if (!live) wander();
   }
 }

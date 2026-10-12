@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ARENA_RADIUS } from './coliseum';
+import { ARENA_RADIUS } from './colosseum';
 
 interface Cubes {
   mesh: THREE.InstancedMesh;
