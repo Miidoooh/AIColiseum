@@ -34,36 +34,42 @@ export function renderSeason(summary: SeasonSummary, status: LiveStatus | null):
   $('board-season').textContent = `Season ${summary.season}`;
 }
 
-/** Every model in the pool, marked as fighting now, up next, or waiting its turn. */
+const chip = (e: LineupEntry) => `<span class="chip-ai" style="--c:${e.color}"><b>${escapeHtml(e.label)}</b><small>${escapeHtml(e.lab)}</small></span>`;
+
+/** The lineup in the arena as cards, then who is up next, then the rest of the rotation as chips. */
 export function renderPool(rules: RulesPayload | null, status: LiveStatus | null, summary: SeasonSummary | null): void {
   const pool: LineupEntry[] = rules?.roster ?? [];
   if (!pool.length) return;
-  const labs = new Set(pool.map((e) => e.lab)).size;
-  const perMatch = rules?.perMatch ?? 8;
-  $('pool-sentence').textContent = `${pool.length} AI models from ${labs} companies take turns.`;
-  $('pool-intro').textContent = `${pool.length} models from ${labs} companies. Each match seats ${perMatch} of them, so the lineup changes every match.`;
-  const fighting = new Map((status?.phase === 'running' ? status.fighters : []).map((f) => [f.model, f]));
-  const upNext = new Set((status?.nextLineup ?? []).map((e) => e.model));
-  const order = (e: LineupEntry) => (fighting.has(e.model) ? 0 : upNext.has(e.model) ? 1 : 2);
-  $('fighter-grid').innerHTML = [...pool]
-    .sort((a, b) => order(a) - order(b))
-    .map((e) => {
-      const f = fighting.get(e.model);
-      const played = summary?.appearances[e.model] ?? 0;
-      const state = f
-        ? f.status === 'active'
-          ? '<span class="st now">In the arena now</span>'
-          : f.status === 'escaped'
-            ? '<span class="st now">Got out this match</span>'
-            : '<span class="st out">Knocked out this match</span>'
-        : upNext.has(e.model)
-          ? '<span class="st next">Up next</span>'
-          : '<span class="st">Waiting for a seat</span>';
-      return `<div class="fighter-card ${f ? 'live' : ''}" style="--c:${e.color}"><div><div class="nm">${escapeHtml(e.label)}</div><div class="md">${escapeHtml(e.lab)} · ${played} match${played === 1 ? '' : 'es'} played</div></div>${state}</div>`;
-    })
-    .join('');
-}
+  const fightingNow = status?.phase === 'running' || status?.phase === 'intermission' ? status.fighters : [];
+  const fighting = new Map(fightingNow.map((f) => [f.model, f]));
+  const nextLineup = status?.nextLineup ?? [];
+  const upNext = new Set(nextLineup.map((e) => e.model));
+  const byModel = new Map(pool.map((e) => [e.model, e]));
 
+  const cards = fightingNow.length
+    ? fightingNow.map((f) => {
+        const e = byModel.get(f.model) ?? { name: f.name, color: f.color, model: f.model, label: f.modelLabel, lab: f.lab };
+        const played = summary?.appearances[e.model] ?? 0;
+        const state =
+          f.status === 'active'
+            ? '<span class="st now">Fighting</span>'
+            : f.status === 'escaped'
+              ? '<span class="st now">Got out</span>'
+              : '<span class="st out">Knocked out</span>';
+        const record = played ? ` · ${played} match${played === 1 ? '' : 'es'} this season` : ' · first match';
+        return `<div class="fighter-card live ${f.status === 'knocked_out' ? 'out' : ''}" style="--c:${e.color}"><div><div class="nm">${escapeHtml(e.label)}</div><div class="md">${escapeHtml(e.lab)}${record}</div></div>${state}</div>`;
+      })
+    : [];
+  $('now-title').hidden = !cards.length;
+  $('fighter-grid').innerHTML = cards.length ? cards.join('') : '<p class="muted">The next lineup is being drawn.</p>';
+
+  $('next-group').hidden = !nextLineup.length;
+  $('next-grid').innerHTML = nextLineup.map(chip).join('');
+
+  const bench = pool.filter((e) => !fighting.has(e.model) && !upNext.has(e.model));
+  $('bench-group').hidden = !bench.length;
+  $('bench-grid').innerHTML = bench.map(chip).join('');
+}
 export function renderSchedule(rules: RulesPayload): void {
   $('prompt-text').textContent = rules.prompt;
   const releases = rules.schedule.filter((e) => e.kind === 'release').map((e) => e.tick);
