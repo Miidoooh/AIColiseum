@@ -298,6 +298,12 @@ body.blackout #vignette {
   gap: 6px;
 }
 
+#controls .hint {
+  font-size: 11px;
+  color: var(--code);
+  white-space: nowrap;
+}
+
 #roster {
   display: flex;
   gap: 6px;
@@ -413,7 +419,7 @@ body.blackout #vignette {
 
 #panel .timeline .row {
   display: grid;
-  grid-template-columns: 34px 60px 1fr;
+  grid-template-columns: 96px 1fr;
   gap: 4px;
   padding: 3px 0;
 }

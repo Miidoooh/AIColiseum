@@ -36,6 +36,11 @@ export function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: st
   return node;
 }
 
+/** The model line under a fighter's name, or nothing when the name already says it (GPT / GPT-6.1 Sol). */
+export function modelNote(name: string, modelLabel: string): string {
+  return modelLabel.toLowerCase().startsWith(name.toLowerCase()) ? '' : modelLabel;
+}
+
 export function hpPips(hp: number, max: number): string {
   return '■'.repeat(Math.max(0, hp)) + '□'.repeat(Math.max(0, max - hp));
 }

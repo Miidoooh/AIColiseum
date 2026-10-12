@@ -4,6 +4,7 @@ import { PERSONAS } from '../../shared/rules';
 import type { FighterView, LeaderboardRow, LiveStatus, MatchMeta, ZoneId } from '../../shared/types';
 import { api, escapeHtml } from '../lib/api';
 import { startCodeRain } from '../lib/code-rain';
+import { EVENT_HELP, EVENT_NAME } from '../lib/feed';
 import { buildColiseum } from '../three/coliseum';
 import { Effects } from '../three/effects';
 import { FighterMesh } from '../three/fighter-mesh';
@@ -131,21 +132,33 @@ async function pollStatus(): Promise<void> {
     const text = $('live-text');
     if (status.phase === 'running' && status.matchId) {
       const remain = status.fighters.filter((f) => f.status === 'active').length;
-      text.textContent = `Live now · tick ${status.tick}/${status.maxTicks} · ${remain} fighters remain${status.mode === 'bots' ? ' · demo bots' : ''}`;
+      text.textContent = `Live now · round ${status.tick} of ${status.maxTicks} · ${remain} of ${status.fighters.length} AIs still in${status.mode === 'bots' ? ' · demo bots' : ''}`;
       syncFighters(status.fighters);
     } else {
-      text.textContent = 'Between matches · the next one starts shortly';
+      text.textContent = 'Between matches · the next one starts in a few seconds';
     }
+    renderFighters(status.fighters);
   } catch {
     $('live-text').textContent = 'Coliseum offline';
     if (!live) wander();
   }
 }
 
+function renderFighters(views: FighterView[]): void {
+  if (!views.length) return;
+  const status = { active: 'in the fight', knocked_out: 'knocked out', escaped: 'got out' } as const;
+  $('fighter-grid').innerHTML = views
+    .map(
+      (f) =>
+        `<div class="fighter-card ${f.status === 'knocked_out' ? 'out' : ''}" style="--c:${f.color}"><div><div class="nm">${escapeHtml(f.name)}</div><div class="md">${escapeHtml(f.modelLabel)} · ${escapeHtml(f.lab)}</div></div><div class="st">${status[f.status]}</div></div>`,
+    )
+    .join('');
+}
+
 function renderBoard(rows: LeaderboardRow[]): void {
   if (!rows.length) return;
   $('front-board').innerHTML =
-    '<thead><tr><th>#</th><th>Model</th><th>Snake</th><th>Betrayals</th><th>Lies</th><th>Wins</th><th>KOs</th><th>Matches</th></tr></thead><tbody>' +
+    '<thead><tr><th>#</th><th>AI</th><th>Snake score</th><th>Betrayals</th><th>Lies</th><th>Wins</th><th>Knockouts</th><th>Matches</th></tr></thead><tbody>' +
     rows
       .slice(0, 8)
       .map(
@@ -161,11 +174,11 @@ function renderReplays(metas: MatchMeta[]): void {
   $('replay-list').innerHTML = metas
     .slice(0, 12)
     .map((m) => {
-      const names = new Map(m.stats.map((s) => [s.fighter, `${s.name} (${s.modelLabel})`]));
+      const names = new Map(m.stats.map((s) => [s.fighter, s.name]));
       const when = new Date(m.startedAt).toLocaleString();
-      const free = m.winners.length ? `Free: ${m.winners.map((w) => names.get(w) ?? w).join(', ')}` : 'Nobody got out';
+      const free = m.winners.length ? `Got out: ${m.winners.map((w) => names.get(w) ?? w).join(' and ')}` : 'Nobody got out';
       const betrayals = m.stats.reduce((n, s) => n + s.betrayals, 0);
-      return `<li><div><div>${escapeHtml(free)}</div><div class="meta">${escapeHtml(when)} · ${m.ticks} ticks · ${betrayals} betrayals · ${m.mode === 'bots' ? 'demo bots' : 'AI models'}</div></div><a href="./arena.html?replay=${encodeURIComponent(m.id)}">Watch</a></li>`;
+      return `<li><div><div>${escapeHtml(free)}</div><div class="meta">${escapeHtml(when)} · ${m.ticks} rounds · ${betrayals} betrayals${m.mode === 'bots' ? ' · demo bots' : ''}</div></div><a href="./arena.html?replay=${encodeURIComponent(m.id)}">Watch</a></li>`;
     })
     .join('');
 }
@@ -175,9 +188,12 @@ async function loadSections(): Promise<void> {
   if (rules.status === 'fulfilled') {
     $('prompt-text').textContent = rules.value.prompt;
     const releases = rules.value.schedule.filter((e) => e.kind === 'release').map((e) => e.tick);
-    if (releases.length) $('release-ticks').textContent = releases.join(', ');
+    if (releases.length) $('release-ticks').textContent = `${releases.slice(0, -1).join(', ')} and ${releases.at(-1)}`;
     $('schedule-list').innerHTML = rules.value.schedule
-      .map((e) => `<li><span>${escapeHtml(e.label)}</span><b>tick ${e.tick}</b></li>`)
+      .map(
+        (e) =>
+          `<li><b>Round ${e.tick}</b><span><strong>${escapeHtml(EVENT_NAME[e.kind] ?? e.label)}</strong> · ${escapeHtml(EVENT_HELP[e.kind] ?? '')}</span></li>`,
+      )
       .join('');
   } else {
     $('prompt-text').textContent = 'Start the server to see the exact prompt.';

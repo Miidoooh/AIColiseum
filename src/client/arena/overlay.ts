@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { ZONE_INFO, ZONES } from '../../shared/arena';
 import type { FighterView, SpeechMode } from '../../shared/types';
-import { el, escapeHtml, hpPips } from '../lib/api';
+import { el, escapeHtml, hpPips, modelNote } from '../lib/api';
 
 export interface BubbleSpec {
   mode: SpeechMode;
@@ -64,7 +64,8 @@ export class Overlay {
       const root = el('div', 'fighter-ui');
       root.style.setProperty('--c', f.color);
       const bubbles = el('div', 'bubbles');
-      const tag = el('div', 'tag', `<span class="nm">${escapeHtml(f.name)}</span><span class="md">${escapeHtml(f.modelLabel)}</span>`);
+      const note = modelNote(f.name, f.modelLabel);
+      const tag = el('div', 'tag', `<span class="nm">${escapeHtml(f.name)}</span>${note ? `<span class="md">${escapeHtml(note)}</span>` : ''}`);
       const hp = el('span', 'hp');
       const bounty = el('span', 'bounty', 'BOUNTY');
       tag.append(hp, bounty);

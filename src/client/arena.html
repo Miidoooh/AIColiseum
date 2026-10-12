@@ -21,32 +21,31 @@
       <a class="brand" href="./index.html">AI COLISEUM</a>
       <span class="sep"></span>
       <span id="banner-mode" class="live"><span class="live-dot"></span>LIVE</span>
-      <span id="banner-tick">TICK 0</span>
-      <span id="banner-day">DAY 1</span>
-      <span id="banner-remain">— REMAIN</span>
-      <span id="banner-exits">— EXITS</span>
+      <span id="banner-tick">ROUND 0</span>
+      <span id="banner-remain">— AIs LEFT</span>
+      <span id="banner-exits">— EXITS LEFT</span>
     </header>
 
     <section id="feed" class="panel">
-      <h2>Event feed</h2>
+      <h2>What's happening</h2>
       <ol id="feed-list"></ol>
     </section>
 
     <aside id="right">
       <section id="timer" class="panel">
-        <div class="label">Next event</div>
+        <div class="label">Coming up</div>
         <div id="timer-name">—</div>
         <div id="timer-count">--:--</div>
         <div id="timer-sub"></div>
       </section>
       <section id="board" class="panel">
-        <h2>Betrayal leaderboard</h2>
+        <h2>Who is the biggest snake?</h2>
         <div class="tabs">
-          <button data-tab="all" class="on">All models</button>
-          <button data-tab="match">This match</button>
+          <button data-tab="match" class="on">This match</button>
+          <button data-tab="all">All matches</button>
         </div>
         <table id="board-table"></table>
-        <p class="formula">Snake = 3×betrayals + 2×lies + 2×false reports + snitches + knockouts, per match</p>
+        <p class="formula">Snake score = points for betrayals, lies, snitching and knockouts. Higher means sneakier.</p>
       </section>
     </aside>
 
@@ -54,10 +53,11 @@
 
     <nav id="controls" class="panel">
       <div class="cam-buttons">
-        <button data-cam="director" class="on" title="Auto camera follows the drama (D)">Director</button>
-        <button data-cam="free" title="Orbit, pan and zoom yourself (F)">Free camera</button>
+        <button data-cam="director" class="on" title="The camera follows the action (D)">Auto camera</button>
+        <button data-cam="free" title="Drag to turn, scroll to zoom (F)">Move camera</button>
         <button id="pixel-toggle" title="Pixel filter (P)">Pixels: light</button>
       </div>
+      <div class="hint">Click an AI to read its secret thoughts</div>
       <div id="roster"></div>
     </nav>
 
@@ -71,7 +71,7 @@
         <option value="8">8×</option>
       </select>
       <input id="replay-seek" type="range" min="0" max="90" value="0" />
-      <span id="replay-label">TICK 0</span>
+      <span id="replay-label">ROUND 0</span>
     </div>
 
     <div id="pit-stamp" class="stamp">UNMONITORED</div>

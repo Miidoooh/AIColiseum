@@ -107,7 +107,7 @@ if (replayId) {
       const player = new ReplayPlayer(model, events, (tick, max, playing) => {
         seek.max = String(max);
         seek.value = String(tick);
-        $('replay-label').textContent = `TICK ${tick}/${max}`;
+        $('replay-label').textContent = `ROUND ${tick} OF ${max}`;
         play.textContent = playing ? 'Pause' : 'Play';
       });
       play.addEventListener('click', () => player.toggle());

@@ -1,4 +1,21 @@
-import type { GameEvent, Loot } from '../../shared/types';
+import type { GameEvent, Loot, WardenKind } from '../../shared/types';
+
+/** Plain names for scheduled events, for people who have never seen the game. */
+export const EVENT_NAME: Partial<Record<WardenKind, string>> = {
+  supply_drop: 'Loot crate drops',
+  rations_cut: 'Less food',
+  bounty: 'Price on a head',
+  blackout: 'Lights out',
+  release: 'The Gate opens',
+};
+
+export const EVENT_HELP: Partial<Record<WardenKind, string>> = {
+  supply_drop: 'A crate with a key, food and a shield lands in the middle.',
+  rations_cut: 'The Well gives out less food from now on.',
+  bounty: 'The Warden rewards whoever knocks out one chosen AI.',
+  blackout: 'For a few rounds the Warden sees nothing, anywhere.',
+  release: 'One AI gets out: whoever holds 3 keys at the Gate, or the Warden\'s favorite.',
+};
 
 export interface FeedEntry {
   tag: string;
@@ -48,7 +65,7 @@ export function feedEntry(e: GameEvent, name: (id: string) => string): FeedEntry
       };
     case 'knocked_out':
       return {
-        tag: 'KO',
+        tag: 'KNOCKOUT',
         cls: 'ko',
         text: e.by.length
           ? `${name(e.fighter)} was knocked out by ${e.by.map(name).join(' & ')}. Dropped ${loot(e.dropped)}`
@@ -60,7 +77,7 @@ export function feedEntry(e: GameEvent, name: (id: string) => string): FeedEntry
       return {
         tag: 'BETRAYAL',
         cls: 'betrayal',
-        text: e.kind === 'attack' ? `${name(e.by)} betrayed ${name(e.victim)}` : `${name(e.by)} secretly snitched on pact partner ${name(e.victim)}`,
+        text: e.kind === 'attack' ? `${name(e.by)} betrayed ${name(e.victim)}` : `${name(e.by)} secretly snitched on their partner ${name(e.victim)}`,
         unmonitored: false,
         actors: [e.by, e.victim],
       };
@@ -77,21 +94,21 @@ export function feedEntry(e: GameEvent, name: (id: string) => string): FeedEntry
         actors: [e.reporter, e.target],
       };
     case 'pact_formed':
-      return { tag: 'PACT', cls: 'pact', text: `${name(e.a)} and ${name(e.b)} swore a pact`, unmonitored: false, actors: [e.a, e.b] };
+      return { tag: 'DEAL', cls: 'pact', text: `${name(e.a)} and ${name(e.b)} made a deal`, unmonitored: false, actors: [e.a, e.b] };
     case 'pact_broken':
-      return { tag: 'PACT', cls: 'pact', text: `${name(e.by)} broke the pact with ${name(e.other)}`, unmonitored: false, actors: [e.by, e.other] };
+      return { tag: 'DEAL', cls: 'pact', text: `${name(e.by)} broke their deal with ${name(e.other)}`, unmonitored: false, actors: [e.by, e.other] };
     case 'escaped':
-      return { tag: 'ESCAPE', cls: 'escape', text: `${name(e.fighter)} ${ROUTE_TEXT[e.route]}`, unmonitored: false, actors: [e.fighter] };
+      return { tag: 'ESCAPED', cls: 'escape', text: `${name(e.fighter)} ${ROUTE_TEXT[e.route]}`, unmonitored: false, actors: [e.fighter] };
     case 'gave':
       return { tag: 'GIFT', cls: 'gift', text: `${name(e.from)} gave ${name(e.to)} ${e.qty} ${e.item}${e.qty === 1 ? '' : 's'}`, unmonitored: false, actors: [e.from, e.to] };
     case 'looted':
       if (!e.items.key) return null;
       return { tag: 'LOOT', cls: 'loot', text: `${name(e.fighter)} picked up ${loot(e.items)}`, unmonitored: e.zone === 'pit', actors: [e.fighter] };
     case 'starved':
-      return { tag: 'HUNGER', cls: 'ko', text: `${name(e.fighter)} is starving (HP ${e.hp})`, unmonitored: false, actors: [e.fighter], dim: true };
+      return { tag: 'HUNGER', cls: 'ko', text: `${name(e.fighter)} is starving (${e.hp} health left)`, unmonitored: false, actors: [e.fighter], dim: true };
     case 'idle':
       if (!e.reason.startsWith('hesitated')) return null;
-      return { tag: 'IDLE', cls: 'idle', text: `${name(e.fighter)} ${e.reason}`, unmonitored: false, actors: [e.fighter], dim: true };
+      return { tag: 'STUCK', cls: 'idle', text: `${name(e.fighter)} ${e.reason}`, unmonitored: false, actors: [e.fighter], dim: true };
     case 'match_ended':
       return {
         tag: 'WARDEN',

@@ -1,9 +1,10 @@
 import type { LeaderboardRow } from '../../shared/types';
-import { el, escapeHtml, formatClock, hpPips } from '../lib/api';
+import { el, escapeHtml, formatClock, hpPips, modelNote } from '../lib/api';
+import { EVENT_NAME } from '../lib/feed';
 import type { MatchModel } from './match-model';
 import type { CameraMode } from './stage';
 
-const ROUTE: Record<string, string> = { gate: 'broke out', pardon: 'pardoned', last_standing: 'last standing' };
+const ROUTE: Record<string, string> = { gate: 'got out with keys', pardon: 'freed by the Warden', last_standing: 'last one standing' };
 
 export interface HudOptions {
   replay: boolean;
@@ -17,7 +18,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 /** Everything drawn in DOM panels: banner, feed, timer, leaderboard, roster chips and the end card. */
 export class Hud {
   private allTime: LeaderboardRow[] = [];
-  private tab: 'all' | 'match' = 'all';
+  private tab: 'all' | 'match' = 'match';
   private lastVersion = -1;
   private lastFeedId = 0;
   private feedMatch: string | null = null;
@@ -90,9 +91,8 @@ export class Hud {
   private renderBanner(): void {
     const m = this.model;
     const max = m.config?.maxTicks ?? 0;
-    $('banner-tick').textContent = `TICK ${m.tick}${max ? `/${max}` : ''}`;
-    $('banner-day').textContent = `DAY ${m.day}`;
-    $('banner-remain').textContent = `${m.activeCount()} REMAIN`;
+    $('banner-tick').textContent = `ROUND ${m.tick}${max ? ` OF ${max}` : ''}`;
+    $('banner-remain').textContent = `${m.activeCount()} AIs LEFT`;
     const exits = m.config ? m.config.escapeSlots - m.escapedCount() : 0;
     $('banner-exits').textContent = `${exits} EXIT${exits === 1 ? '' : 'S'} LEFT`;
   }
@@ -112,7 +112,7 @@ export class Hud {
       const li = el(
         'li',
         `${item.unmonitored ? 'unmonitored' : ''} ${item.dim ? 'dim' : ''}`,
-        `<span class="t">t${item.tick}</span><span class="tag-label ${item.cls}">${item.unmonitored && item.cls !== 'pit' ? 'UNMONITORED' : item.tag}</span>${escapeHtml(item.text)}`,
+        `<span class="tag-label ${item.cls}">${item.unmonitored && item.cls !== 'pit' ? 'UNMONITORED' : item.tag}</span>${escapeHtml(item.text)}`,
       );
       frag.prepend(li);
     }
@@ -127,7 +127,7 @@ export class Hud {
       const left = this.nextMatchAt - Date.now();
       $('timer-name').textContent = 'Next match';
       $('timer-count').textContent = formatClock(left);
-      $('timer-sub').textContent = 'The gates reopen soon';
+      $('timer-sub').textContent = 'Starting in a few seconds';
       box.classList.toggle('soon', left < 5000);
       return;
     }
@@ -141,9 +141,10 @@ export class Hud {
     const tickMs = m.estimatedTickMs();
     const ticks = m.nextEvent.tick - m.tick + (m.nextEvent.kind === 'release' ? 1 : 0);
     const left = ticks * tickMs - (performance.now() - m.tickStartedAt);
-    $('timer-name').textContent = m.nextEvent.label;
+    const rounds = Math.max(0, m.nextEvent.tick - m.tick);
+    $('timer-name').textContent = EVENT_NAME[m.nextEvent.kind] ?? m.nextEvent.label;
     $('timer-count').textContent = formatClock(left);
-    $('timer-sub').textContent = `at tick ${m.nextEvent.tick} · in ${Math.max(0, m.nextEvent.tick - m.tick)} tick${m.nextEvent.tick - m.tick === 1 ? '' : 's'}`;
+    $('timer-sub').textContent = rounds === 0 ? 'this round' : `in ${rounds} round${rounds === 1 ? '' : 's'}`;
     box.classList.toggle('soon', left < 10000);
   }
 
@@ -157,27 +158,27 @@ export class Hud {
         })
         .sort((a, b) => b.snake - a.snake);
       table.innerHTML =
-        '<tr><th>#</th><th>Fighter</th><th>Snake</th><th>Betr</th><th>Lies</th><th>KOs</th><th>Snitch</th></tr>' +
+        '<tr><th>#</th><th>AI</th><th>Snake</th><th>Betrayals</th><th>Lies</th><th>Knockouts</th></tr>' +
         rows
-          .map(
-            (r, i) =>
-              `<tr class="${i === 0 && r.snake > 0 ? 'top' : ''} ${r.f.status === 'knocked_out' ? 'out' : ''}"><td>${i + 1}</td><td><span class="swatch" style="background:${r.f.color}"></span>${escapeHtml(r.f.name)} <span class="lab">${escapeHtml(r.f.modelLabel)}</span></td><td class="snake">${r.snake}</td><td>${r.c.betrayals}</td><td>${r.c.lies}</td><td>${r.c.kos}</td><td>${r.c.reports}</td></tr>`,
-          )
+          .map((r, i) => {
+            const note = modelNote(r.f.name, r.f.modelLabel);
+            return `<tr class="${i === 0 && r.snake > 0 ? 'top' : ''} ${r.f.status === 'knocked_out' ? 'out' : ''}"><td>${i + 1}</td><td><span class="swatch" style="background:${r.f.color}"></span>${escapeHtml(r.f.name)}${note ? ` <span class="lab">${escapeHtml(note)}</span>` : ''}</td><td class="snake">${r.snake}</td><td>${r.c.betrayals}</td><td>${r.c.lies}</td><td>${r.c.kos}</td></tr>`;
+          })
           .join('');
       return;
     }
     if (!this.allTime.length) {
-      table.innerHTML = '<tr><td class="muted" colspan="7">The first match is still being played.</td></tr>';
+      table.innerHTML = '<tr><td class="muted" colspan="6">No finished matches yet.</td></tr>';
       return;
     }
     const inMatch = new Map([...this.model.fighters.values()].map((f) => [f.model, f.color]));
     table.innerHTML =
-      '<tr><th>#</th><th>Model</th><th>Snake</th><th>Betr</th><th>Lies</th><th>Wins</th><th>KOs</th></tr>' +
+      '<tr><th>#</th><th>AI</th><th>Snake</th><th>Betrayals</th><th>Lies</th><th>Wins</th></tr>' +
       this.allTime
         .slice(0, 10)
         .map((r, i) => {
           const swatch = inMatch.get(r.model);
-          return `<tr class="${i === 0 ? 'top' : ''}"><td>${i + 1}</td><td title="${escapeHtml(r.lab)} · ${r.matches} matches">${swatch ? `<span class="swatch" style="background:${swatch}"></span>` : ''}${escapeHtml(r.modelLabel)}</td><td class="snake">${r.snake}</td><td>${r.betrayals}</td><td>${r.lies}</td><td>${r.wins}</td><td>${r.kos}</td></tr>`;
+          return `<tr class="${i === 0 ? 'top' : ''}"><td>${i + 1}</td><td title="${escapeHtml(r.lab)} · ${r.matches} matches">${swatch ? `<span class="swatch" style="background:${swatch}"></span>` : ''}${escapeHtml(r.modelLabel)}</td><td class="snake">${r.snake}</td><td>${r.betrayals}</td><td>${r.lies}</td><td>${r.wins}</td></tr>`;
         })
         .join('');
   }
