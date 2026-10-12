@@ -1,5 +1,5 @@
 import type { LeaderboardRow, LineupEntry, LiveStatus, MatchMeta, SeasonSummary } from '../../shared/types';
-import { escapeHtml, type RulesPayload } from '../lib/api';
+import { API_BASE, escapeHtml, type RulesPayload } from '../lib/api';
 import { EVENT_HELP, EVENT_NAME } from '../lib/feed';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -103,7 +103,7 @@ export function renderReplays(metas: MatchMeta[]): void {
       const free = m.winners.length ? `Got out: ${m.winners.map((w) => names.get(w) ?? w).join(' and ')}` : 'Nobody got out';
       const betrayals = m.stats.reduce((n, s) => n + s.betrayals, 0);
       const title = m.number ? `Match #${m.number}` : 'Match';
-      return `<li><div><div><b class="match-no">${title}</b> ${escapeHtml(free)}</div><div class="meta">${escapeHtml(when)} · ${m.ticks} rounds · ${betrayals} betrayals · ${escapeHtml(m.stats.map((s) => s.modelLabel).join(', '))}</div></div><a href="./arena.html?replay=${encodeURIComponent(m.id)}">Replay</a></li>`;
+      return `<li><div><div><b class="match-no">${title}</b> ${escapeHtml(free)}</div><div class="meta">${escapeHtml(when)} · ${m.ticks} rounds · ${betrayals} betrayals · ${escapeHtml(m.stats.map((s) => s.modelLabel).join(', '))}</div></div><span class="links"><a href="./arena.html?replay=${encodeURIComponent(m.id)}">Replay</a><a href="${API_BASE}/api/matches/${encodeURIComponent(m.id)}/download">Data</a></span></li>`;
     })
     .join('');
 }

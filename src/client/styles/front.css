@@ -492,6 +492,19 @@ main {
   border-radius: 999px;
 }
 
+.replay-list .links {
+  display: flex;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.archive-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
 .replay-list .match-no {
   margin-right: 6px;
   color: var(--gold);

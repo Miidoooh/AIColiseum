@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { ZONES } from '../../shared/arena';
 import { PERSONAS } from '../../shared/rules';
 import type { FighterView, LiveStatus, SeasonSummary, ZoneId } from '../../shared/types';
-import { api, type RulesPayload } from '../lib/api';
+import { API_BASE, api, type RulesPayload } from '../lib/api';
 import { startCodeRain } from '../lib/code-rain';
 import { renderBadge, renderBoard, renderPool, renderReplays, renderSchedule, renderSeason } from './sections';
 import { buildColosseum } from '../three/colosseum';
@@ -172,6 +172,8 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('.ca[data-ca]'
     window.setTimeout(() => label && (label.textContent = 'Copy'), 1600);
   });
 }
+
+$<HTMLAnchorElement>('archive-download').href = `${API_BASE}/api/archive`;
 
 pollStatus();
 window.setInterval(pollStatus, 4000);
