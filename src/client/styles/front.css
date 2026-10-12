@@ -309,6 +309,140 @@ main {
   opacity: 0.5;
 }
 
+.fighter-card.live {
+  box-shadow: 0 0 0 1px var(--c), 0 0 18px rgba(57, 255, 136, 0.08);
+}
+
+.fighter-card .st.now {
+  color: var(--code);
+  text-shadow: 0 0 8px rgba(57, 255, 136, 0.5);
+}
+
+.fighter-card .st.next {
+  color: var(--gold);
+}
+
+.fighter-card .st.out {
+  color: var(--pit);
+}
+
+.hero-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 10px;
+  margin: -14px 0 28px;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-facts li {
+  padding: 5px 12px;
+  font-size: 13px;
+  color: var(--text);
+  background: rgba(11, 8, 6, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.hero-facts b {
+  color: var(--gold);
+}
+
+.season-strip {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px;
+  margin: 0 0 64px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.season-strip .stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 10px;
+  background: rgba(13, 10, 7, 0.92);
+  text-align: center;
+}
+
+.season-strip .stat b {
+  font-family: var(--serif);
+  font-size: 26px;
+  color: var(--gold);
+  line-height: 1.2;
+}
+
+.season-strip .stat span {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.timeline-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-steps li {
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(57, 255, 136, 0.05), rgba(13, 10, 7, 0.88));
+  border: 1px solid rgba(57, 255, 136, 0.2);
+  border-radius: 4px;
+}
+
+.timeline-steps .num {
+  flex: 0 0 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--code);
+  border-radius: 50%;
+}
+
+.timeline-steps h3 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--text);
+}
+
+.timeline-steps p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.season-tag {
+  margin-left: 8px;
+  padding: 2px 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  vertical-align: 6px;
+  color: var(--ink);
+  background: var(--gold);
+  border-radius: 999px;
+}
+
+.replay-list .match-no {
+  margin-right: 6px;
+  color: var(--gold);
+}
+
 .steps {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

@@ -1,4 +1,4 @@
-import type { GameEvent, LiveStatus } from '../../shared/types';
+import type { GameEvent, LineupEntry, LiveStatus } from '../../shared/types';
 import { API_BASE } from '../lib/api';
 import type { MatchModel } from './match-model';
 
@@ -56,8 +56,8 @@ export class Pacer {
 }
 
 export interface LiveHooks {
-  onHello(phase: LiveStatus['phase'], nextMatchAt: number | null, message: string | null): void;
-  onIntermission(nextMatchAt: number): void;
+  onHello(phase: LiveStatus['phase'], nextMatchAt: number | null, message: string | null, nextLineup: LineupEntry[] | null): void;
+  onIntermission(nextMatchAt: number, nextLineup: LineupEntry[] | null): void;
   onOffline(message: string, phase: 'offline' | 'paused'): void;
   onDisconnect(): void;
 }
@@ -71,11 +71,12 @@ export function connectLive(model: MatchModel, hooks: LiveHooks): () => void {
       phase: LiveStatus['phase'];
       nextMatchAt: number | null;
       message?: string | null;
+      nextLineup?: LineupEntry[] | null;
     };
     pacer.clear();
     model.reset();
     for (const e of data.events) model.apply(e, false);
-    hooks.onHello(data.phase, data.nextMatchAt, data.message ?? null);
+    hooks.onHello(data.phase, data.nextMatchAt, data.message ?? null, data.nextLineup ?? null);
   });
   source.addEventListener('offline', (msg) => {
     const data = JSON.parse((msg as MessageEvent<string>).data) as { message: string; phase?: 'offline' | 'paused' };
@@ -83,7 +84,8 @@ export function connectLive(model: MatchModel, hooks: LiveHooks): () => void {
   });
   source.addEventListener('intermission', (msg) => {
     pacer.flush();
-    hooks.onIntermission((JSON.parse((msg as MessageEvent<string>).data) as { nextMatchAt: number }).nextMatchAt);
+    const data = JSON.parse((msg as MessageEvent<string>).data) as { nextMatchAt: number; nextLineup?: LineupEntry[] | null };
+    hooks.onIntermission(data.nextMatchAt, data.nextLineup ?? null);
   });
   source.onmessage = (msg) => {
     const e = JSON.parse(msg.data as string) as GameEvent;

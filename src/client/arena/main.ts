@@ -127,12 +127,12 @@ if (replayId) {
     box.innerHTML = `<span>${title}</span><small class="muted">${escapeHtml(message ?? 'The game server is not running a match.')}</small><a href="./index.html">Front page</a>`;
   };
   connectLive(model, {
-    onHello: (phase, nextMatchAt, message) => {
+    onHello: (phase, nextMatchAt, message, nextLineup) => {
       if (phase === 'offline' || phase === 'paused') return showOffline(message, phase);
-      hud.setIntermission(phase === 'intermission' ? nextMatchAt : null);
+      hud.setIntermission(phase === 'intermission' ? nextMatchAt : null, nextLineup);
       hideConnecting();
     },
-    onIntermission: (nextMatchAt) => hud.setIntermission(nextMatchAt),
+    onIntermission: (nextMatchAt, nextLineup) => hud.setIntermission(nextMatchAt, nextLineup),
     onOffline: (message, phase) => showOffline(message, phase),
     onDisconnect: () => {
       /* EventSource reconnects on its own and the server replays the match on hello */

@@ -41,6 +41,8 @@ const TIMELINE_CAP = 140;
 /** Client-side fold of the event stream. Everything the HUD, panel and stage read comes from here. */
 export class MatchModel {
   matchId: string | null = null;
+  season: number | null = null;
+  number: number | null = null;
   mode: MatchMode | null = null;
   config: MatchConfigView | null = null;
   schedule: ScheduledEventView[] = [];
@@ -71,6 +73,8 @@ export class MatchModel {
 
   reset(): void {
     this.matchId = null;
+    this.season = null;
+    this.number = null;
     this.mode = null;
     this.config = null;
     this.schedule = [];
@@ -137,6 +141,8 @@ export class MatchModel {
       case 'match_started':
         this.reset();
         this.matchId = e.matchId;
+        this.season = e.season ?? null;
+        this.number = e.number ?? null;
         this.mode = e.mode;
         this.config = e.config;
         this.schedule = e.schedule;

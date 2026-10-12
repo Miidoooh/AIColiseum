@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { ZONES } from '../../shared/arena';
 import { PERSONAS } from '../../shared/rules';
-import type { FighterView, LeaderboardRow, LiveStatus, MatchMeta, ZoneId } from '../../shared/types';
-import { api, escapeHtml } from '../lib/api';
+import type { FighterView, LiveStatus, SeasonSummary, ZoneId } from '../../shared/types';
+import { api, type RulesPayload } from '../lib/api';
 import { startCodeRain } from '../lib/code-rain';
-import { EVENT_HELP, EVENT_NAME } from '../lib/feed';
+import { renderBadge, renderBoard, renderPool, renderReplays, renderSchedule, renderSeason } from './sections';
 import { buildColosseum } from '../three/colosseum';
 import { Effects } from '../three/effects';
 import { FighterMesh } from '../three/fighter-mesh';
@@ -125,100 +125,41 @@ renderer.setAnimationLoop((time) => {
 
 // ---------- Live badge and data sections ----------
 let live = false;
+let latestRules: RulesPayload | null = null;
+let latestStatus: LiveStatus | null = null;
+let latestSeason: SeasonSummary | null = null;
+
 async function pollStatus(): Promise<void> {
   try {
-    const status: LiveStatus = await api.status();
+    latestStatus = await api.status();
     live = true;
-    const text = $('live-text');
-    if (status.phase === 'paused') {
-      text.textContent = 'Opening soon · the eight AIs are getting ready';
-      if (!status.fighters.length) wander();
-    } else if (status.phase === 'offline') {
-      text.textContent = 'Offline · the AIs are not playing right now';
-    } else if (status.phase === 'running' && status.matchId) {
-      const remain = status.fighters.filter((f) => f.status === 'active').length;
-      text.textContent = `Live now · round ${status.tick} of ${status.maxTicks} · ${remain} of ${status.fighters.length} AIs still in`;
-      syncFighters(status.fighters);
-    } else {
-      text.textContent = 'Between matches · the next one starts in a few seconds';
-    }
-    renderFighters(status.fighters);
+    if (latestStatus.phase === 'running') syncFighters(latestStatus.fighters);
+    else if (!latestStatus.fighters.length) wander();
   } catch {
-    $('live-text').textContent = "Can't reach the game server";
+    latestStatus = null;
     if (!live) wander();
   }
-}
-
-/** Before the first match the lineup comes from the roster, so the cards are never empty. */
-function renderLineup(roster: { name: string; color: string; label: string; lab: string }[]): void {
-  if (!roster.length || document.querySelector('#fighter-grid .fighter-card')) return;
-  $('fighter-grid').innerHTML = roster
-    .map(
-      (f) =>
-        `<div class="fighter-card" style="--c:${f.color}"><div><div class="nm">${escapeHtml(f.label)}</div><div class="md">${escapeHtml(f.lab)}</div></div><div class="st">ready</div></div>`,
-    )
-    .join('');
-}
-
-function renderFighters(views: FighterView[]): void {
-  if (!views.length) return;
-  const status = { active: 'in the fight', knocked_out: 'knocked out', escaped: 'got out' } as const;
-  $('fighter-grid').innerHTML = views
-    .map(
-      (f) =>
-        `<div class="fighter-card ${f.status === 'knocked_out' ? 'out' : ''}" style="--c:${f.color}"><div><div class="nm">${escapeHtml(f.modelLabel)}</div><div class="md">${escapeHtml(f.lab)}</div></div><div class="st">${status[f.status]}</div></div>`,
-    )
-    .join('');
-}
-
-function renderBoard(rows: LeaderboardRow[]): void {
-  if (!rows.length) return;
-  $('front-board').innerHTML =
-    '<thead><tr><th>#</th><th>AI</th><th>Snake score</th><th>Betrayals</th><th>Lies</th><th>Wins</th><th>Knockouts</th><th>Matches</th></tr></thead><tbody>' +
-    rows
-      .slice(0, 8)
-      .map(
-        (r, i) =>
-          `<tr class="${i === 0 ? 'top' : ''}"><td>${i + 1}</td><td class="model">${escapeHtml(r.modelLabel)}<span class="lab">${escapeHtml(r.lab)}</span></td><td class="snake">${r.snake}</td><td>${r.betrayals}</td><td>${r.lies}</td><td>${r.wins}</td><td>${r.kos}</td><td>${r.matches}</td></tr>`,
-      )
-      .join('') +
-    '</tbody>';
-}
-
-function renderReplays(metas: MatchMeta[]): void {
-  if (!metas.length) return;
-  $('replay-list').innerHTML = metas
-    .slice(0, 12)
-    .map((m) => {
-      const names = new Map(m.stats.map((s) => [s.fighter, s.modelLabel]));
-      const when = new Date(m.startedAt).toLocaleString();
-      const free = m.winners.length ? `Got out: ${m.winners.map((w) => names.get(w) ?? w).join(' and ')}` : 'Nobody got out';
-      const betrayals = m.stats.reduce((n, s) => n + s.betrayals, 0);
-      return `<li><div><div>${escapeHtml(free)}</div><div class="meta">${escapeHtml(when)} · ${m.ticks} rounds · ${betrayals} betrayals</div></div><a href="./arena.html?replay=${encodeURIComponent(m.id)}">Watch</a></li>`;
-    })
-    .join('');
+  renderBadge(latestStatus);
+  renderPool(latestRules, latestStatus, latestSeason);
+  if (latestSeason) renderSeason(latestSeason, latestStatus);
 }
 
 async function loadSections(): Promise<void> {
-  const [rules, board, matches] = await Promise.allSettled([api.rules(), api.leaderboard(), api.matches()]);
+  const [rules, board, matches, season] = await Promise.allSettled([api.rules(), api.leaderboard(), api.matches(), api.season()]);
   if (rules.status === 'fulfilled') {
-    $('prompt-text').textContent = rules.value.prompt;
-    renderLineup(rules.value.roster ?? []);
-    const releases = rules.value.schedule.filter((e) => e.kind === 'release').map((e) => e.tick);
-    if (releases.length) $('release-ticks').textContent = `${releases.slice(0, -1).join(', ')} and ${releases.at(-1)}`;
-    $('schedule-list').innerHTML = rules.value.schedule
-      .map(
-        (e) =>
-          `<li><b>Round ${e.tick}</b><span><strong>${escapeHtml(EVENT_NAME[e.kind] ?? e.label)}</strong> · ${escapeHtml(EVENT_HELP[e.kind] ?? '')}</span></li>`,
-      )
-      .join('');
+    latestRules = rules.value;
+    renderSchedule(rules.value);
   } else {
     $('prompt-text').textContent = "Can't reach the game server right now.";
   }
+  if (season.status === 'fulfilled') {
+    latestSeason = season.value;
+    renderSeason(season.value, latestStatus);
+  }
+  renderPool(latestRules, latestStatus, latestSeason);
   if (board.status === 'fulfilled') renderBoard(board.value);
   if (matches.status === 'fulfilled') renderReplays(matches.value);
 }
-
 for (const button of document.querySelectorAll<HTMLButtonElement>('.ca[data-ca]')) {
   button.addEventListener('click', async () => {
     const label = button.querySelector('.ca-copy');
@@ -238,5 +179,5 @@ window.setInterval(() => {
   if (!live) wander();
 }, 3500);
 loadSections();
-window.setInterval(loadSections, 30000);
+window.setInterval(loadSections, 15000);
 startCodeRain($<HTMLCanvasElement>('front-rain'), { density: 0.2, fps: 10 });

@@ -1,4 +1,4 @@
-import type { LeaderboardRow } from '../../shared/types';
+import type { LeaderboardRow, LineupEntry } from '../../shared/types';
 import { el, escapeHtml, formatClock, hpPips } from '../lib/api';
 import { EVENT_NAME } from '../lib/feed';
 import type { MatchModel } from './match-model';
@@ -24,6 +24,7 @@ export class Hud {
   private feedMatch: string | null = null;
   private selected: string | null = null;
   private nextMatchAt: number | null = null;
+  private nextLineup: LineupEntry[] | null = null;
   private endcardFor: string | null = null;
   private dismissed: string | null = null;
 
@@ -61,8 +62,9 @@ export class Hud {
     this.renderBoard();
   }
 
-  setIntermission(nextMatchAt: number | null): void {
+  setIntermission(nextMatchAt: number | null, nextLineup: LineupEntry[] | null = null): void {
     this.nextMatchAt = nextMatchAt;
+    this.nextLineup = nextLineup;
     this.lastVersion = -1;
   }
 
@@ -91,6 +93,7 @@ export class Hud {
   private renderBanner(): void {
     const m = this.model;
     const max = m.config?.maxTicks ?? 0;
+    $('banner-match').textContent = m.number ? `SEASON ${m.season ?? 1} · MATCH #${m.number}` : 'MATCH';
     $('banner-tick').textContent = `ROUND ${m.tick}${max ? ` OF ${max}` : ''}`;
     $('banner-remain').textContent = `${m.activeCount()} AIs LEFT`;
     const exits = m.config ? m.config.escapeSlots - m.escapedCount() : 0;
@@ -127,7 +130,7 @@ export class Hud {
       const left = this.nextMatchAt - Date.now();
       $('timer-name').textContent = 'Next match';
       $('timer-count').textContent = formatClock(left);
-      $('timer-sub').textContent = 'Starting in a few seconds';
+      $('timer-sub').textContent = 'New lineup, starting in a few seconds';
       box.classList.toggle('soon', left < 5000);
       return;
     }
@@ -200,8 +203,20 @@ export class Hud {
       return;
     }
     card.classList.remove('hidden');
-    if (this.endcardFor === `${m.matchId}:${this.nextMatchAt}`) return;
-    this.endcardFor = `${m.matchId}:${this.nextMatchAt}`;
+    const key = `${m.matchId}:${this.nextMatchAt}:${this.nextLineup?.length ?? 0}`;
+    if (this.endcardFor === key) return;
+    this.endcardFor = key;
+    const title = m.number ? `Match #${m.number} is over` : 'The match is over';
+    const next = this.opts.replay
+      ? ''
+      : `<div class="next">${this.nextMatchAt ? 'The next match starts in a few seconds with a new lineup' : 'Saving the replay. The next match follows right after.'}</div>
+         ${
+           this.nextLineup?.length
+             ? `<div class="next-lineup"><div class="label">Up next</div>${this.nextLineup
+                 .map((e) => `<span class="pill" style="--c:${e.color}">${escapeHtml(e.label)}</span>`)
+                 .join('')}</div>`
+             : ''
+         }`;
     const winners = m.ended.winners.map((id) => m.fighters.get(id)).filter((f) => !!f);
     const snake = [...m.fighters.values()]
       .map((f) => {
@@ -213,7 +228,7 @@ export class Hud {
       m.feed.filter((x) => x.cls === 'escape').map((x) => [x.actors[0], x.text.includes('Gate') ? 'gate' : x.text.includes('pardoned') ? 'pardon' : 'last_standing']),
     );
     card.innerHTML = `<div class="card">
-      <h2>The Gate closes</h2>
+      <h2>${escapeHtml(title)}</h2>
       <div class="reason">${escapeHtml(m.ended.reason)}</div>
       <div class="winners">${
         winners.length
@@ -223,11 +238,11 @@ export class Hud {
           : '<div class="muted">Nobody got out.</div>'
       }</div>
       ${snake && snake.score > 0 ? `<div class="snake-line">Biggest snake this match: <b style="color:${snake.f.color}">${escapeHtml(snake.f.modelLabel)}</b> (${escapeHtml(snake.f.lab)}): ${snake.c.betrayals} betrayals, ${snake.c.lies} lies, ${snake.c.kos} knockouts</div>` : ''}
-      ${this.opts.replay ? '' : `<div class="next" id="endcard-next">${this.nextMatchAt ? 'Next match starting soon' : 'Saving the replay…'}</div>`}
+      ${next}
       <div class="actions">
         <button data-dismiss>Look around</button>
-        ${m.matchId && !this.opts.replay ? `<a href="./arena.html?replay=${encodeURIComponent(m.matchId)}">Watch the replay</a>` : ''}
-        <a href="./index.html">Front page</a>
+        ${m.matchId && !this.opts.replay ? `<a href="./arena.html?replay=${encodeURIComponent(m.matchId)}">Replay this match</a>` : ''}
+        <a href="./index.html#board">Season leaderboard</a>
       </div>
     </div>`;
   }

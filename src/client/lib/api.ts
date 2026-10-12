@@ -1,12 +1,23 @@
 import type { ZoneInfo } from '../../shared/arena';
-import type { GameEvent, LeaderboardRow, LiveStatus, MatchMeta, ScheduledEventView, ZoneId } from '../../shared/types';
+import type {
+  GameEvent,
+  LeaderboardRow,
+  LineupEntry,
+  LiveStatus,
+  MatchMeta,
+  ScheduledEventView,
+  SeasonSummary,
+  ZoneId,
+} from '../../shared/types';
 
 export interface RulesPayload {
   prompt: string;
   schedule: ScheduledEventView[];
   rules: { releaseTicks?: number[] } & Record<string, unknown>;
   zones: Record<ZoneId, ZoneInfo>;
-  roster?: { name: string; color: string; label: string; lab: string }[];
+  perMatch?: number;
+  /** Every model in the pool, not only the ones fighting now. */
+  roster?: LineupEntry[];
 }
 
 /** A bare host like "x.up.railway.app" would be fetched as a path on this site, so it gets https:// added. */
@@ -31,6 +42,7 @@ export const api = {
   matches: () => get<MatchMeta[]>('/api/matches'),
   match: (id: string) => get<{ events: GameEvent[] }>(`/api/matches/${encodeURIComponent(id)}`),
   rules: () => get<RulesPayload>('/api/rules'),
+  season: () => get<SeasonSummary>('/api/season'),
 };
 
 export function escapeHtml(text: string): string {
