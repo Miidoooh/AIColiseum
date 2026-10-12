@@ -55,8 +55,8 @@ export class FighterPanel {
       .join('');
     this.root.innerHTML = `
       <div class="head">
-        <span class="name" style="color:${f.color}">${escapeHtml(f.name)}</span>
-        <span class="model">${escapeHtml(f.modelLabel)} · ${escapeHtml(f.lab)}</span>
+        <span class="name" style="color:${f.color}">${escapeHtml(f.modelLabel)}</span>
+        <span class="model">${escapeHtml(f.lab)}</span>
         <button class="close" title="Stop following (Esc)">×</button>
       </div>
       <div class="stats">

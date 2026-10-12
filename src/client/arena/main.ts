@@ -1,4 +1,4 @@
-import { api } from '../lib/api';
+import { api, escapeHtml } from '../lib/api';
 import { startCodeRain } from '../lib/code-rain';
 import { Hud } from './hud';
 import { MatchModel } from './match-model';
@@ -120,12 +120,19 @@ if (replayId) {
       $('connecting').innerHTML = '<span>That replay could not be found.</span><a href="./index.html">Back to the front page</a>';
     });
 } else {
+  const showOffline = (message: string | null) => {
+    const box = $('connecting');
+    box.classList.remove('gone');
+    box.innerHTML = `<span>The AIs are offline right now</span><small class="muted">${escapeHtml(message ?? 'The game server is not running a match.')}</small><a href="./index.html">Front page</a>`;
+  };
   connectLive(model, {
-    onHello: (phase, nextMatchAt) => {
+    onHello: (phase, nextMatchAt, message) => {
+      if (phase === 'offline') return showOffline(message);
       hud.setIntermission(phase === 'intermission' ? nextMatchAt : null);
       hideConnecting();
     },
     onIntermission: (nextMatchAt) => hud.setIntermission(nextMatchAt),
+    onOffline: (message) => showOffline(message),
     onDisconnect: () => {
       /* EventSource reconnects on its own and the server replays the match on hello */
     },

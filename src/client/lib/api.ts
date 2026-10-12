@@ -8,8 +8,15 @@ export interface RulesPayload {
   zones: Record<ZoneId, ZoneInfo>;
 }
 
+/** A bare host like "x.up.railway.app" would be fetched as a path on this site, so it gets https:// added. */
+export function apiBase(raw: unknown): string {
+  const value = String(raw ?? '').trim().replace(/\/+$/, '');
+  if (!value) return '';
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
 /** Where the game server lives. Empty means same origin; on Vercel, set VITE_API_URL to the Railway URL. */
-export const API_BASE: string = String(import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '');
+export const API_BASE: string = apiBase(import.meta.env.VITE_API_URL);
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { headers: { Accept: 'application/json' } });
@@ -34,11 +41,6 @@ export function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: st
   if (className) node.className = className;
   if (html !== undefined) node.innerHTML = html;
   return node;
-}
-
-/** The model line under a fighter's name, or nothing when the name already says it (GPT / GPT-6.1 Sol). */
-export function modelNote(name: string, modelLabel: string): string {
-  return modelLabel.toLowerCase().startsWith(name.toLowerCase()) ? '' : modelLabel;
 }
 
 export function hpPips(hp: number, max: number): string {

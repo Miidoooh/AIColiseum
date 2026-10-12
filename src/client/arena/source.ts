@@ -56,8 +56,9 @@ export class Pacer {
 }
 
 export interface LiveHooks {
-  onHello(phase: LiveStatus['phase'], nextMatchAt: number | null): void;
+  onHello(phase: LiveStatus['phase'], nextMatchAt: number | null, message: string | null): void;
   onIntermission(nextMatchAt: number): void;
+  onOffline(message: string): void;
   onDisconnect(): void;
 }
 
@@ -65,11 +66,19 @@ export function connectLive(model: MatchModel, hooks: LiveHooks): () => void {
   const pacer = new Pacer((e) => model.apply(e, true), () => model.estimatedTickMs());
   const source = new EventSource(`${API_BASE}/api/live`);
   source.addEventListener('hello', (msg) => {
-    const data = JSON.parse((msg as MessageEvent<string>).data) as { events: GameEvent[]; phase: LiveStatus['phase']; nextMatchAt: number | null };
+    const data = JSON.parse((msg as MessageEvent<string>).data) as {
+      events: GameEvent[];
+      phase: LiveStatus['phase'];
+      nextMatchAt: number | null;
+      message?: string | null;
+    };
     pacer.clear();
     model.reset();
     for (const e of data.events) model.apply(e, false);
-    hooks.onHello(data.phase, data.nextMatchAt);
+    hooks.onHello(data.phase, data.nextMatchAt, data.message ?? null);
+  });
+  source.addEventListener('offline', (msg) => {
+    hooks.onOffline((JSON.parse((msg as MessageEvent<string>).data) as { message: string }).message);
   });
   source.addEventListener('intermission', (msg) => {
     pacer.flush();

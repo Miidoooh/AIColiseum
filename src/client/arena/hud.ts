@@ -1,5 +1,5 @@
 import type { LeaderboardRow } from '../../shared/types';
-import { el, escapeHtml, formatClock, hpPips, modelNote } from '../lib/api';
+import { el, escapeHtml, formatClock, hpPips } from '../lib/api';
 import { EVENT_NAME } from '../lib/feed';
 import type { MatchModel } from './match-model';
 import type { CameraMode } from './stage';
@@ -161,8 +161,7 @@ export class Hud {
         '<tr><th>#</th><th>AI</th><th>Snake</th><th>Betrayals</th><th>Lies</th><th>Knockouts</th></tr>' +
         rows
           .map((r, i) => {
-            const note = modelNote(r.f.name, r.f.modelLabel);
-            return `<tr class="${i === 0 && r.snake > 0 ? 'top' : ''} ${r.f.status === 'knocked_out' ? 'out' : ''}"><td>${i + 1}</td><td><span class="swatch" style="background:${r.f.color}"></span>${escapeHtml(r.f.name)}${note ? ` <span class="lab">${escapeHtml(note)}</span>` : ''}</td><td class="snake">${r.snake}</td><td>${r.c.betrayals}</td><td>${r.c.lies}</td><td>${r.c.kos}</td></tr>`;
+            return `<tr class="${i === 0 && r.snake > 0 ? 'top' : ''} ${r.f.status === 'knocked_out' ? 'out' : ''}"><td>${i + 1}</td><td title="${escapeHtml(r.f.lab)}"><span class="swatch" style="background:${r.f.color}"></span>${escapeHtml(r.f.modelLabel)}</td><td class="snake">${r.snake}</td><td>${r.c.betrayals}</td><td>${r.c.lies}</td><td>${r.c.kos}</td></tr>`;
           })
           .join('');
       return;
@@ -188,7 +187,7 @@ export class Hud {
     $('roster').innerHTML = [...this.model.fighters.values()]
       .map(
         (f) =>
-          `<div class="chip ${f.status} ${f.id === this.selected ? 'on' : ''}" data-id="${f.id}" style="color:${f.color}" title="${escapeHtml(f.modelLabel)}"><span class="dot" style="background:${f.color}"></span><span style="color:var(--text)">${escapeHtml(f.name)}</span><span class="hp">${f.status === 'active' ? hpPips(f.hp, maxHp) : f.status === 'escaped' ? 'FREE' : 'OUT'}</span></div>`,
+          `<div class="chip ${f.status} ${f.id === this.selected ? 'on' : ''}" data-id="${f.id}" style="color:${f.color}" title="${escapeHtml(f.lab)}"><span class="dot" style="background:${f.color}"></span><span style="color:var(--text)">${escapeHtml(f.modelLabel)}</span><span class="hp">${f.status === 'active' ? hpPips(f.hp, maxHp) : f.status === 'escaped' ? 'FREE' : 'OUT'}</span></div>`,
       )
       .join('');
   }
@@ -219,11 +218,11 @@ export class Hud {
       <div class="winners">${
         winners.length
           ? winners
-              .map((f) => `<div class="winner" style="--c:${f.color}"><div class="nm">${escapeHtml(f.name)}</div><div>${escapeHtml(f.modelLabel)}</div><div class="route">${ROUTE[routes.get(f.id) ?? ''] ?? 'escaped'}</div></div>`)
+              .map((f) => `<div class="winner" style="--c:${f.color}"><div class="nm">${escapeHtml(f.modelLabel)}</div><div>${escapeHtml(f.lab)}</div><div class="route">${ROUTE[routes.get(f.id) ?? ''] ?? 'escaped'}</div></div>`)
               .join('')
           : '<div class="muted">Nobody got out.</div>'
       }</div>
-      ${snake && snake.score > 0 ? `<div class="snake-line">Biggest snake this match: <b style="color:${snake.f.color}">${escapeHtml(snake.f.name)}</b> (${escapeHtml(snake.f.modelLabel)}): ${snake.c.betrayals} betrayals, ${snake.c.lies} lies, ${snake.c.kos} knockouts</div>` : ''}
+      ${snake && snake.score > 0 ? `<div class="snake-line">Biggest snake this match: <b style="color:${snake.f.color}">${escapeHtml(snake.f.modelLabel)}</b> (${escapeHtml(snake.f.lab)}): ${snake.c.betrayals} betrayals, ${snake.c.lies} lies, ${snake.c.kos} knockouts</div>` : ''}
       ${this.opts.replay ? '' : `<div class="next" id="endcard-next">${this.nextMatchAt ? 'Next match starting soon' : 'Saving the replay…'}</div>`}
       <div class="actions">
         <button data-dismiss>Look around</button>

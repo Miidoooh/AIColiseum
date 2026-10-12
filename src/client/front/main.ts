@@ -82,12 +82,12 @@ function syncFighters(views: FighterView[]): void {
   placeAll();
 }
 
-/** Until the server answers, eight demo fighters wander between zones. */
+/** Until the server answers, eight placeholder figures wander between zones. */
 function wander(): void {
   if (fighters.size === 0) {
     syncFighters(
       PERSONAS.slice(0, 8).map((p, i) => ({
-        id: `demo-${i}`,
+        id: `idle-${i}`,
         name: p.name,
         color: p.color,
         model: '',
@@ -130,16 +130,18 @@ async function pollStatus(): Promise<void> {
     const status: LiveStatus = await api.status();
     live = true;
     const text = $('live-text');
-    if (status.phase === 'running' && status.matchId) {
+    if (status.phase === 'offline') {
+      text.textContent = 'Offline · the AIs are not playing right now';
+    } else if (status.phase === 'running' && status.matchId) {
       const remain = status.fighters.filter((f) => f.status === 'active').length;
-      text.textContent = `Live now · round ${status.tick} of ${status.maxTicks} · ${remain} of ${status.fighters.length} AIs still in${status.mode === 'bots' ? ' · demo bots' : ''}`;
+      text.textContent = `Live now · round ${status.tick} of ${status.maxTicks} · ${remain} of ${status.fighters.length} AIs still in`;
       syncFighters(status.fighters);
     } else {
       text.textContent = 'Between matches · the next one starts in a few seconds';
     }
     renderFighters(status.fighters);
   } catch {
-    $('live-text').textContent = 'Colosseum offline';
+    $('live-text').textContent = "Can't reach the game server";
     if (!live) wander();
   }
 }
@@ -150,7 +152,7 @@ function renderFighters(views: FighterView[]): void {
   $('fighter-grid').innerHTML = views
     .map(
       (f) =>
-        `<div class="fighter-card ${f.status === 'knocked_out' ? 'out' : ''}" style="--c:${f.color}"><div><div class="nm">${escapeHtml(f.name)}</div><div class="md">${escapeHtml(f.modelLabel)} · ${escapeHtml(f.lab)}</div></div><div class="st">${status[f.status]}</div></div>`,
+        `<div class="fighter-card ${f.status === 'knocked_out' ? 'out' : ''}" style="--c:${f.color}"><div><div class="nm">${escapeHtml(f.modelLabel)}</div><div class="md">${escapeHtml(f.lab)}</div></div><div class="st">${status[f.status]}</div></div>`,
     )
     .join('');
 }
@@ -174,11 +176,11 @@ function renderReplays(metas: MatchMeta[]): void {
   $('replay-list').innerHTML = metas
     .slice(0, 12)
     .map((m) => {
-      const names = new Map(m.stats.map((s) => [s.fighter, s.name]));
+      const names = new Map(m.stats.map((s) => [s.fighter, s.modelLabel]));
       const when = new Date(m.startedAt).toLocaleString();
       const free = m.winners.length ? `Got out: ${m.winners.map((w) => names.get(w) ?? w).join(' and ')}` : 'Nobody got out';
       const betrayals = m.stats.reduce((n, s) => n + s.betrayals, 0);
-      return `<li><div><div>${escapeHtml(free)}</div><div class="meta">${escapeHtml(when)} · ${m.ticks} rounds · ${betrayals} betrayals${m.mode === 'bots' ? ' · demo bots' : ''}</div></div><a href="./arena.html?replay=${encodeURIComponent(m.id)}">Watch</a></li>`;
+      return `<li><div><div>${escapeHtml(free)}</div><div class="meta">${escapeHtml(when)} · ${m.ticks} rounds · ${betrayals} betrayals</div></div><a href="./arena.html?replay=${encodeURIComponent(m.id)}">Watch</a></li>`;
     })
     .join('');
 }
@@ -196,7 +198,7 @@ async function loadSections(): Promise<void> {
       )
       .join('');
   } else {
-    $('prompt-text').textContent = 'Start the server to see the exact prompt.';
+    $('prompt-text').textContent = "Can't reach the game server right now.";
   }
   if (board.status === 'fulfilled') renderBoard(board.value);
   if (matches.status === 'fulfilled') renderReplays(matches.value);
