@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="./styles/base.css" />
     <link rel="stylesheet" href="./styles/arena.css" />
     <link rel="stylesheet" href="./styles/world.css" />
+    <link rel="stylesheet" href="./styles/crowd.css" />
   </head>
   <body class="arena">
     <canvas id="scene"></canvas>
@@ -65,9 +66,15 @@
         <button data-cam="free" title="Drag to turn, scroll to zoom (F)">Move camera</button>
         <button id="pixel-toggle" title="Pixel filter (P)">Pixels: light</button>
       </div>
+      <div class="crowd-buttons">
+        <button id="open-warden" class="btn burn" title="Burn tokens to trigger a live event">Pay the Warden</button>
+        <button id="open-call" class="btn primary" title="Predict the match and earn season points">Call it</button>
+      </div>
       <div class="hint">Click an AI to read its secret thoughts</div>
       <div id="roster"></div>
     </nav>
+
+    <div id="crowd-modal" class="hidden"></div>
 
     <div id="replay-bar" class="panel hidden">
       <button id="replay-play">Pause</button>

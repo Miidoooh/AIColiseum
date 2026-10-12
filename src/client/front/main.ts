@@ -4,7 +4,7 @@ import { PERSONAS } from '../../shared/rules';
 import type { FighterView, LiveStatus, SeasonSummary, ZoneId } from '../../shared/types';
 import { API_BASE, api, type RulesPayload } from '../lib/api';
 import { startCodeRain } from '../lib/code-rain';
-import { renderBadge, renderBoard, renderPool, renderReplays, renderSchedule, renderSeason } from './sections';
+import { renderBadge, renderBoard, renderJoin, renderPool, renderReplays, renderSchedule, renderSeason } from './sections';
 import { buildColosseum } from '../three/colosseum';
 import { Effects } from '../three/effects';
 import { FighterMesh } from '../three/fighter-mesh';
@@ -145,7 +145,20 @@ async function pollStatus(): Promise<void> {
 }
 
 async function loadSections(): Promise<void> {
-  const [rules, board, matches, season] = await Promise.allSettled([api.rules(), api.leaderboard(), api.matches(), api.season()]);
+  const [rules, board, matches, season, token, callers, gladiatorList] = await Promise.allSettled([
+    api.rules(),
+    api.leaderboard(),
+    api.matches(),
+    api.season(),
+    api.token(),
+    api.callers(),
+    api.gladiators(),
+  ]);
+  renderJoin(
+    token.status === 'fulfilled' ? token.value : null,
+    callers.status === 'fulfilled' ? callers.value : [],
+    gladiatorList.status === 'fulfilled' ? gladiatorList.value : [],
+  );
   if (rules.status === 'fulfilled') {
     latestRules = rules.value;
     renderSchedule(rules.value);

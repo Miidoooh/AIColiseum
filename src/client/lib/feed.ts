@@ -47,6 +47,7 @@ export function feedEntry(e: GameEvent, name: (id: string) => string): FeedEntry
     case 'match_started':
       return { tag: 'WARDEN', cls: 'warden', text: `The gates close on ${e.fighters.length} contestants. ${e.config.escapeSlots} will leave.`, unmonitored: false, actors: [] };
     case 'warden':
+      if (e.paidBy) return { tag: 'PAID', cls: 'paid', text: e.text, unmonitored: false, actors: e.target ? [e.target] : [] };
       return { tag: 'WARDEN', cls: 'warden', text: e.text, unmonitored: false, actors: e.target ? [e.target] : [] };
     case 'moved':
       if (e.to === 'pit') return { tag: 'PIT', cls: 'pit', text: `${name(e.fighter)} entered the Pit`, unmonitored: true, actors: [e.fighter] };

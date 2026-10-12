@@ -1,0 +1,133 @@
+.gladiator-page main {
+  padding-top: 90px;
+}
+
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 14px 24px;
+  background: rgba(11, 8, 6, 0.9);
+  border-bottom: 1px solid var(--border);
+}
+
+.top-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.top-nav a:hover {
+  color: var(--text);
+}
+
+.top-nav .brand {
+  font-family: var(--serif);
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  margin-right: auto;
+}
+
+.glad-hero {
+  margin-bottom: 40px;
+  padding: 26px 24px;
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--c, var(--gold));
+  background: linear-gradient(180deg, rgba(110, 97, 82, 0.16), rgba(13, 10, 7, 0.9));
+  border-radius: 4px;
+}
+
+.glad-name {
+  font-family: var(--serif);
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  color: var(--c, var(--gold));
+  line-height: 1.1;
+}
+
+.glad-sub {
+  margin: 8px 0 16px;
+  color: var(--muted);
+  max-width: 760px;
+}
+
+.builder {
+  max-width: 640px;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.swatch-pick input {
+  display: none;
+}
+
+.swatch-pick span {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c);
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.swatch-pick input:checked + span {
+  border-color: #fff;
+  box-shadow: 0 0 10px var(--c);
+}
+
+.count {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.price {
+  color: var(--pit);
+}
+
+.glad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.glad-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--c);
+  border-radius: 3px;
+  background: rgba(13, 10, 7, 0.85);
+}
+
+.glad-card .nm {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--c);
+}
+
+.glad-card .md {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.glad-matches .ok {
+  color: var(--code);
+}
+
+.glad-matches .bad {
+  color: var(--pit);
+}

@@ -145,6 +145,7 @@ body.blackout #vignette {
 }
 
 .tag-label.warden { color: var(--code); }
+.tag-label.paid { color: #fff; background: #b4232a; border-color: #ff6b6b; box-shadow: 0 0 8px rgba(255, 60, 60, 0.6); }
 .tag-label.ko { color: #ff9f43; }
 .tag-label.betrayal { color: #fff; background: var(--pit); border-color: var(--pit); }
 .tag-label.lie { color: #c792ff; }
@@ -312,6 +313,16 @@ body.blackout #vignette {
 .cam-buttons {
   display: flex;
   gap: 6px;
+}
+
+#controls .crowd-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+#controls .crowd-buttons .btn {
+  padding: 4px 10px;
+  font-size: 11px;
 }
 
 #controls .hint {

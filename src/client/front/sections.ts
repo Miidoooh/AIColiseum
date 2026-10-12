@@ -1,6 +1,8 @@
+import { WARDEN_ACTIONS, WARDEN_ACTION_TEXT, shortWallet, type CallerRow, type GladiatorView, type TokenConfigView } from '../../shared/crowd';
 import type { LeaderboardRow, LineupEntry, LiveStatus, MatchMeta, SeasonSummary } from '../../shared/types';
 import { API_BASE, escapeHtml, type RulesPayload } from '../lib/api';
 import { EVENT_HELP, EVENT_NAME } from '../lib/feed';
+import { formatTokens } from '../lib/wallet';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -70,6 +72,30 @@ export function renderPool(rules: RulesPayload | null, status: LiveStatus | null
   $('bench-group').hidden = !bench.length;
   $('bench-grid').innerHTML = bench.map(chip).join('');
 }
+/** The three holder features: live prices, the callers' table and the gladiators in the Open Arena. */
+export function renderJoin(token: TokenConfigView | null, callers: CallerRow[], gladiators: GladiatorView[]): void {
+  if (token) {
+    $('warden-prices').innerHTML = WARDEN_ACTIONS.map((a) => `<li><span>${escapeHtml(WARDEN_ACTION_TEXT[a].name)}</span><b>${formatTokens(token.warden[a])}</b></li>`).join('');
+    $('call-rule').textContent = `Hold at least ${formatTokens(token.callItMinimumHolding)} tokens. Calls close at round ${token.callItLockRound}.`;
+    $('gladiator-rule').textContent = `Entering burns ${formatTokens(token.gladiatorPrice)} tokens.`;
+  }
+  if (callers.length) {
+    $('callers-board').innerHTML =
+      '<thead><tr><th>#</th><th>Wallet</th><th>Points</th><th>Hits</th><th>Calls</th></tr></thead><tbody>' +
+      callers
+        .slice(0, 10)
+        .map((c, i) => `<tr class="${i === 0 ? 'top-caller' : ''}"><td>${i + 1}</td><td class="model">${escapeHtml(shortWallet(c.wallet))}</td><td class="snake">${c.points}</td><td>${c.hits}</td><td>${c.calls}</td></tr>`)
+        .join('') +
+      '</tbody>';
+  }
+  if (gladiators.length) {
+    $('gladiator-chips').innerHTML = gladiators
+      .slice(0, 30)
+      .map((g) => `<a class="chip-ai" style="--c:${g.color}" href="./gladiator.html?id=${encodeURIComponent(g.id)}"><b>${escapeHtml(g.name)}</b><small>${escapeHtml(g.modelLabel)}</small></a>`)
+      .join('');
+  }
+}
+
 export function renderSchedule(rules: RulesPayload): void {
   $('prompt-text').textContent = rules.prompt;
   const releases = rules.schedule.filter((e) => e.kind === 'release').map((e) => e.tick);

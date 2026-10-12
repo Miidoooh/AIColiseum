@@ -1,5 +1,6 @@
 import { api, escapeHtml } from '../lib/api';
 import { startCodeRain } from '../lib/code-rain';
+import { CrowdUi } from './crowd-ui';
 import { Hud } from './hud';
 import { MatchModel } from './match-model';
 import { Overlay } from './overlay';
@@ -21,6 +22,12 @@ const hud = new Hud(model, {
   onPixels: () => stage.cyclePixels(),
 });
 let selected: string | null = null;
+const crowd = new CrowdUi($('crowd-modal'), model);
+$('open-warden').addEventListener('click', () => crowd.openWarden());
+$('open-call').addEventListener('click', () => crowd.openCall());
+if (replayId) document.querySelector('.crowd-buttons')?.remove();
+else if (location.hash === '#warden') void crowd.openWarden();
+else if (location.hash === '#callit') void crowd.openCall();
 
 function select(id: string | null): void {
   selected = id && model.fighters.has(id) ? id : null;

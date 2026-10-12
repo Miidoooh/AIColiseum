@@ -1,4 +1,5 @@
 import type { ZoneInfo } from '../../shared/arena';
+import type { CallerRow, CallPicks, CallWindow, GladiatorProfile, GladiatorView, TokenConfigView } from '../../shared/crowd';
 import type {
   GameEvent,
   LeaderboardRow,
@@ -43,7 +44,28 @@ export const api = {
   match: (id: string) => get<{ events: GameEvent[] }>(`/api/matches/${encodeURIComponent(id)}`),
   rules: () => get<RulesPayload>('/api/rules'),
   season: () => get<SeasonSummary>('/api/season'),
+  token: () => get<TokenConfigView>('/api/token'),
+  blockhash: () => get<{ blockhash: string; lastValidBlockHeight: number }>('/api/chain/blockhash'),
+  callWindow: () => get<CallWindow>('/api/calls/window'),
+  callers: () => get<CallerRow[]>('/api/calls/leaderboard'),
+  gladiators: () => get<GladiatorView[]>('/api/gladiators'),
+  gladiator: (id: string) => get<GladiatorProfile>(`/api/gladiators/${encodeURIComponent(id)}`),
+  payWarden: (signature: string) => post<{ action: string; target?: string; payer: string; burned: number }>('/api/warden', { signature }),
+  submitCall: (body: { wallet: string; picks: CallPicks; signature: string }) => post<{ ok: true; match: number }>('/api/calls', body),
+  createGladiator: (body: Record<string, string>) => post<GladiatorView>('/api/gladiators', body),
 };
+
+/** POSTs JSON and surfaces the server's own error message, which is written for the visitor. */
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
+  if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);
+  return data as T;
+}
 
 export function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
