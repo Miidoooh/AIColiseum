@@ -219,6 +219,19 @@ async function loadSections(): Promise<void> {
   if (matches.status === 'fulfilled') renderReplays(matches.value);
 }
 
+for (const button of document.querySelectorAll<HTMLButtonElement>('.ca[data-ca]')) {
+  button.addEventListener('click', async () => {
+    const label = button.querySelector('.ca-copy');
+    try {
+      await navigator.clipboard.writeText(button.dataset.ca ?? '');
+      if (label) label.textContent = 'Copied';
+    } catch {
+      if (label) label.textContent = 'Select it';
+    }
+    window.setTimeout(() => label && (label.textContent = 'Copy'), 1600);
+  });
+}
+
 pollStatus();
 window.setInterval(pollStatus, 4000);
 window.setInterval(() => {

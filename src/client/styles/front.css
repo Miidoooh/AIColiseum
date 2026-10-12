@@ -180,6 +180,35 @@
   border-radius: 999px;
 }
 
+button.ca {
+  font: inherit;
+  font-size: 13px;
+  max-width: calc(100vw - 40px);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+button.ca:hover {
+  border-color: var(--gold);
+}
+
+.ca-value {
+  color: var(--text);
+  font-family: var(--mono);
+  user-select: all;
+  word-break: break-all;
+  text-align: left;
+}
+
+.ca-copy {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
 .ca-label {
   padding: 2px 8px;
   font-weight: 600;
