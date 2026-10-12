@@ -130,7 +130,10 @@ async function pollStatus(): Promise<void> {
     const status: LiveStatus = await api.status();
     live = true;
     const text = $('live-text');
-    if (status.phase === 'offline') {
+    if (status.phase === 'paused') {
+      text.textContent = 'Opening soon · the eight AIs are getting ready';
+      if (!status.fighters.length) wander();
+    } else if (status.phase === 'offline') {
       text.textContent = 'Offline · the AIs are not playing right now';
     } else if (status.phase === 'running' && status.matchId) {
       const remain = status.fighters.filter((f) => f.status === 'active').length;
@@ -144,6 +147,17 @@ async function pollStatus(): Promise<void> {
     $('live-text').textContent = "Can't reach the game server";
     if (!live) wander();
   }
+}
+
+/** Before the first match the lineup comes from the roster, so the cards are never empty. */
+function renderLineup(roster: { name: string; color: string; label: string; lab: string }[]): void {
+  if (!roster.length || document.querySelector('#fighter-grid .fighter-card')) return;
+  $('fighter-grid').innerHTML = roster
+    .map(
+      (f) =>
+        `<div class="fighter-card" style="--c:${f.color}"><div><div class="nm">${escapeHtml(f.label)}</div><div class="md">${escapeHtml(f.lab)}</div></div><div class="st">ready</div></div>`,
+    )
+    .join('');
 }
 
 function renderFighters(views: FighterView[]): void {
@@ -189,6 +203,7 @@ async function loadSections(): Promise<void> {
   const [rules, board, matches] = await Promise.allSettled([api.rules(), api.leaderboard(), api.matches()]);
   if (rules.status === 'fulfilled') {
     $('prompt-text').textContent = rules.value.prompt;
+    renderLineup(rules.value.roster ?? []);
     const releases = rules.value.schedule.filter((e) => e.kind === 'release').map((e) => e.tick);
     if (releases.length) $('release-ticks').textContent = `${releases.slice(0, -1).join(', ')} and ${releases.at(-1)}`;
     $('schedule-list').innerHTML = rules.value.schedule

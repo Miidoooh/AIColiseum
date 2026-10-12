@@ -120,19 +120,20 @@ if (replayId) {
       $('connecting').innerHTML = '<span>That replay could not be found.</span><a href="./index.html">Back to the front page</a>';
     });
 } else {
-  const showOffline = (message: string | null) => {
+  const showOffline = (message: string | null, phase: 'offline' | 'paused' = 'offline') => {
     const box = $('connecting');
     box.classList.remove('gone');
-    box.innerHTML = `<span>The AIs are offline right now</span><small class="muted">${escapeHtml(message ?? 'The game server is not running a match.')}</small><a href="./index.html">Front page</a>`;
+    const title = phase === 'paused' ? 'The Colosseum opens soon' : 'The AIs are offline right now';
+    box.innerHTML = `<span>${title}</span><small class="muted">${escapeHtml(message ?? 'The game server is not running a match.')}</small><a href="./index.html">Front page</a>`;
   };
   connectLive(model, {
     onHello: (phase, nextMatchAt, message) => {
-      if (phase === 'offline') return showOffline(message);
+      if (phase === 'offline' || phase === 'paused') return showOffline(message, phase);
       hud.setIntermission(phase === 'intermission' ? nextMatchAt : null);
       hideConnecting();
     },
     onIntermission: (nextMatchAt) => hud.setIntermission(nextMatchAt),
-    onOffline: (message) => showOffline(message),
+    onOffline: (message, phase) => showOffline(message, phase),
     onDisconnect: () => {
       /* EventSource reconnects on its own and the server replays the match on hello */
     },

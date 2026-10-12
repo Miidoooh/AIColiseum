@@ -6,6 +6,7 @@ export interface RulesPayload {
   schedule: ScheduledEventView[];
   rules: { releaseTicks?: number[] } & Record<string, unknown>;
   zones: Record<ZoneId, ZoneInfo>;
+  roster?: { name: string; color: string; label: string; lab: string }[];
 }
 
 /** A bare host like "x.up.railway.app" would be fetched as a path on this site, so it gets https:// added. */

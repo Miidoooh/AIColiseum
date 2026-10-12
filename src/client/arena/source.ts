@@ -58,7 +58,7 @@ export class Pacer {
 export interface LiveHooks {
   onHello(phase: LiveStatus['phase'], nextMatchAt: number | null, message: string | null): void;
   onIntermission(nextMatchAt: number): void;
-  onOffline(message: string): void;
+  onOffline(message: string, phase: 'offline' | 'paused'): void;
   onDisconnect(): void;
 }
 
@@ -78,7 +78,8 @@ export function connectLive(model: MatchModel, hooks: LiveHooks): () => void {
     hooks.onHello(data.phase, data.nextMatchAt, data.message ?? null);
   });
   source.addEventListener('offline', (msg) => {
-    hooks.onOffline((JSON.parse((msg as MessageEvent<string>).data) as { message: string }).message);
+    const data = JSON.parse((msg as MessageEvent<string>).data) as { message: string; phase?: 'offline' | 'paused' };
+    hooks.onOffline(data.message, data.phase ?? 'offline');
   });
   source.addEventListener('intermission', (msg) => {
     pacer.flush();
