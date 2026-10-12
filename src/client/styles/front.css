@@ -129,6 +129,67 @@
   font-size: 14px;
 }
 
+.hero-links,
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.x-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(239, 230, 210, 0.35);
+  border-radius: 999px;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.x-link:hover {
+  border-color: var(--text);
+  background: #000;
+}
+
+.x-link svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.ca {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 7px;
+  font-size: 13px;
+  color: var(--muted);
+  background: rgba(11, 8, 6, 0.7);
+  border: 1px dashed rgba(242, 196, 109, 0.4);
+  border-radius: 999px;
+}
+
+.ca-label {
+  padding: 2px 8px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  background: var(--gold);
+  border-radius: 999px;
+}
+
 .scroll-hint {
   position: absolute;
   bottom: 22px;

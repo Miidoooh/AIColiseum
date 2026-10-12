@@ -68,6 +68,22 @@ body.blackout #vignette {
   letter-spacing: 0.12em;
 }
 
+#banner .x-link {
+  display: inline-flex;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+#banner .x-link:hover {
+  opacity: 1;
+}
+
+#banner .x-link svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
 #banner .sep {
   width: 1px;
   height: 14px;
